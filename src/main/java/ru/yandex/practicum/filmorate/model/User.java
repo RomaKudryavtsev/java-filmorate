@@ -11,11 +11,11 @@ import java.util.Optional;
 @Data
 @Builder
 public class User {
-    int id;
+    private int id;
     @Email
-    String email;
+    private String email;
     @NonNull
-    String login;
-    Optional<String> name;
-    LocalDate birthday;
+    private String login;
+    private Optional<String> name;
+    private LocalDate birthday;
 }

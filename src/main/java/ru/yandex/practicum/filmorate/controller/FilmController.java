@@ -29,6 +29,19 @@ public class FilmController {
         this.storage = storage;
     }
 
+    private boolean validateFilm(Film film) throws ValidationException {
+        if(film.getDescription().length() > 200) {
+            throw new ValidationException("Film description may not exceed 200 symbols");
+        }
+        if(film.getReleaseDate().isBefore(LocalDate.of(1895, 12, 28))) {
+            throw new ValidationException("Invalid film release date");
+        }
+        if(film.getDuration() <= 0) {
+            throw new ValidationException("Duration must be positive number");
+        }
+        return true;
+    }
+
     @GetMapping ("/films")
     public List<Film> getAllFilms() {
         return storage.getAllFilms();
@@ -37,15 +50,7 @@ public class FilmController {
     @PostMapping(value = "/films")
     public Film addFilm (@Valid @RequestBody Film film) {
         try {
-            if(film.getDescription().length() > 200) {
-                throw new ValidationException("Film description may not exceed 200 symbols");
-            }
-            if(film.getReleaseDate().isBefore(LocalDate.of(1895, 12, 28))) {
-                throw new ValidationException("Invalid film release date");
-            }
-            if(film.getDuration() <= 0) {
-                throw new ValidationException("Duration must be positive number");
-            }
+            validateFilm(film);
             Film addedFilm = storage.addFilm(film);
             log.info("The following film was successfully added: {}", film);
             return addedFilm;

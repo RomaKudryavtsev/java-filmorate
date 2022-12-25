@@ -31,6 +31,15 @@ public class UserController {
         this.storage = storage;
     }
 
+    private boolean validateUser(User user) throws ValidationException {
+        if(user.getLogin().contains(" ")) {
+            throw new ValidationException("Login must not contain white-spaces");
+        }
+        if(user.getBirthday().isAfter(LocalDate.now())) {
+            throw new ValidationException("Birthday must not be a date in future");
+        }
+        return true;
+    }
     @GetMapping("/users")
     public List<User> getAllUsers() {
         return storage.getAllUsers();
@@ -40,14 +49,9 @@ public class UserController {
     @ResponseBody
     public ResponseEntity<User> addUser (@Valid @RequestBody User user) {
         try {
-            if(user.getLogin().contains(" ")) {
-                throw new ValidationException("Login must not contain white-spaces");
-            }
+            validateUser(user);
             if(user.getName() == null || !user.getName().isPresent()) {
                 user.setName(Optional.of(user.getLogin()));
-            }
-            if(user.getBirthday().isAfter(LocalDate.now())) {
-                throw new ValidationException("Birthday must not be a date in future");
             }
             User addedUser = storage.addUser(user);
             log.info("The following user was successfully added: {}", addedUser);

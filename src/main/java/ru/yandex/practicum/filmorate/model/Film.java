@@ -11,11 +11,11 @@ import java.time.LocalDate;
 @Data
 @Builder
 public class Film {
-    int id;
+    private int id;
     @NonNull
     @NotBlank
-    String name;
-    String description;
-    LocalDate releaseDate;
-    int duration;
+    private String name;
+    private String description;
+    private LocalDate releaseDate;
+    private int duration;
 }
