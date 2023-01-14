@@ -14,43 +14,45 @@ import java.util.List;
 public class FilmController {
     //NOTE: FilmController is dependent from FilmService
     private final FilmService filmService;
+    private final static String ALTER_LIKES_PATH = "/films/{id}/like/{userId}";
+    private final static String GENERAL_FILMS_PATH = "/films";
 
     @Autowired
     public FilmController(FilmService filmService) {
         this.filmService = filmService;
     }
 
-    @PutMapping(value = "/films/{id}/like/{userId}")
+    @PutMapping(value = ALTER_LIKES_PATH)
     public void addLike(@PathVariable("id") Integer filmId, @PathVariable("userId") Integer userId) {
         filmService.addLike(filmId, userId);
     }
 
-    @DeleteMapping(value = "/films/{id}/like/{userId}")
+    @DeleteMapping(value = ALTER_LIKES_PATH)
     public void deleteLike(@PathVariable("id") Integer filmId, @PathVariable("userId") Integer userId) {
         filmService.cancelLike(filmId, userId);
     }
 
-    @GetMapping("/films/popular")
+    @GetMapping(GENERAL_FILMS_PATH + "/popular")
     public List<Film> findMostPopularFilms(@RequestParam(defaultValue = "10", required = false) Integer count) {
         return filmService.getMostLikedFilms(count);
     }
 
-    @GetMapping("/films/{id}")
+    @GetMapping(GENERAL_FILMS_PATH + "/{id}")
     public Film getFilmById(@PathVariable("id") Integer filmId) {
         return filmService.getFilmById(filmId);
     }
 
-    @GetMapping ("/films")
+    @GetMapping (GENERAL_FILMS_PATH)
     public List<Film> getAllFilms() {
         return filmService.getAllFilms();
     }
 
-    @PostMapping(value = "/films")
+    @PostMapping(value = GENERAL_FILMS_PATH)
     public Film addFilm (@Valid @RequestBody Film film) {
         return filmService.addFilm(film);
     }
 
-    @PutMapping(value = "/films")
+    @PutMapping(value = GENERAL_FILMS_PATH)
     public Film updateFilm (@Valid @RequestBody Film film) {
         return filmService.updateFilm(film);
     }

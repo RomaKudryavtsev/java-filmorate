@@ -13,48 +13,51 @@ import java.util.List;
 public class UserController {
     //NOTE: UserController is dependent from UserService
     private final UserService userService;
+    private final static String GENERAL_FRIENDS_PATH = "/users/{id}/friends";
+    private final static String ALTER_FRIENDS_PATH = "/users/{id}/friends/{friendId}";
+    private final static String GENERAL_USERS_PATH = "/users";
 
     @Autowired
     public UserController(UserService userService) {
         this.userService = userService;
     }
 
-    @PutMapping(value = "/users/{id}/friends/{friendId}")
+    @PutMapping(value = ALTER_FRIENDS_PATH)
     public void addToFriends(@PathVariable("id") Integer id, @PathVariable("friendId") Integer friendId) {
         userService.addToFriends(id, friendId);
     }
 
-    @DeleteMapping(value = "/users/{id}/friends/{friendId}")
+    @DeleteMapping(value = ALTER_FRIENDS_PATH)
     public void deleteFromFriends(@PathVariable("id") Integer userId, @PathVariable("friendId") Integer friendId) {
         userService.deleteFromFriends(userId, friendId);
     }
 
-    @GetMapping("/users/{id}/friends")
+    @GetMapping(GENERAL_FRIENDS_PATH)
     public List<User> getFriends(@PathVariable("id") Integer userId) {
         return userService.getListOfUsersFriends(userId);
     }
 
-    @GetMapping("/users/{id}/friends/common/{otherId}")
+    @GetMapping(GENERAL_FRIENDS_PATH + "/common/{otherId}")
     public List<User> getCommonFriends(@PathVariable("id") Integer userId1, @PathVariable("otherId") Integer userId2) {
         return userService.getListOfCommonFriends(userId1, userId2);
     }
 
-    @GetMapping("/users")
+    @GetMapping(GENERAL_USERS_PATH)
     public List<User> getAllUsers() {
         return userService.getAllUsers();
     }
 
-    @GetMapping("/users/{id}")
+    @GetMapping(GENERAL_USERS_PATH + "/{id}")
     public User getUserById(@PathVariable("id") Integer userId) {
         return userService.getUserById(userId);
     }
 
-    @PostMapping(value = "/users")
+    @PostMapping(value = GENERAL_USERS_PATH)
     public User addUser(@Valid @RequestBody User user) {
         return userService.addUser(user);
     }
 
-    @PutMapping(value = "/users")
+    @PutMapping(value = GENERAL_USERS_PATH)
     public User updateUser(@Valid @RequestBody User user) {
         return userService.updateUser(user);
     }

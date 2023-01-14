@@ -1,8 +1,10 @@
 package ru.yandex.practicum.filmorate.model;
 
+import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
+import lombok.experimental.FieldDefaults;
 import ru.yandex.practicum.filmorate.exceptions.UserDoesNotExistException;
 
 import javax.validation.constraints.Email;
@@ -11,15 +13,16 @@ import java.util.Set;
 
 @Data
 @Builder
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class User {
-    private Set<Integer> usersFriends;
-    private int id;
+    Set<Integer> usersFriends;
+    int id;
     @Email
-    private String email;
+    String email;
     @NonNull
-    private String login;
-    private String name;
-    private LocalDate birthday;
+    String login;
+    String name;
+    LocalDate birthday;
 
     public void addFriend(int friendId) {
         usersFriends.add(friendId);

@@ -1,8 +1,10 @@
 package ru.yandex.practicum.filmorate.model;
 
+import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
+import lombok.experimental.FieldDefaults;
 import ru.yandex.practicum.filmorate.exceptions.UserDoesNotExistException;
 
 import javax.validation.constraints.NotBlank;
@@ -11,15 +13,16 @@ import java.util.Set;
 
 @Data
 @Builder
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class Film {
-    private Set<Integer> usersLiked;
-    private int id;
+    Set<Integer> usersLiked;
+    int id;
     @NonNull
     @NotBlank
-    private String name;
-    private String description;
-    private LocalDate releaseDate;
-    private int duration;
+    String name;
+    String description;
+    LocalDate releaseDate;
+    int duration;
 
     public int getAmountOfLikes() {
         return usersLiked.size();
