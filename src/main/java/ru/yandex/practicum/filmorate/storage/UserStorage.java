@@ -12,4 +12,6 @@ public interface UserStorage {
     User addUser(User user) throws UserAlreadyExistsException;
 
     User updateUser(User user) throws UserToBeUpdatedDoesNotExistException;
+
+    User getUser(int userId);
 }

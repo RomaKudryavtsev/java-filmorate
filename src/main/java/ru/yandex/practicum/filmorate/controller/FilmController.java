@@ -1,78 +1,58 @@
 package ru.yandex.practicum.filmorate.controller;
 
-import org.springframework.http.HttpStatus;
-import org.springframework.web.server.ResponseStatusException;
-import ru.yandex.practicum.filmorate.exceptions.FilmAlreadyExistsException;
-import ru.yandex.practicum.filmorate.exceptions.FilmToBeUpdatedDoesNotExistException;
-import ru.yandex.practicum.filmorate.exceptions.ValidationException;
-import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import ru.yandex.practicum.filmorate.model.Film;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.storage.FilmStorage;
-import ru.yandex.practicum.filmorate.storage.InMemoryFilmStorage;
+import ru.yandex.practicum.filmorate.service.FilmService;
+
 
 import javax.validation.Valid;
-import java.time.LocalDate;
 import java.util.List;
 
 @RestController
 @RequestMapping
-@Slf4j
 public class FilmController {
-    private final FilmStorage storage;
+    //NOTE: FilmController is dependent from FilmService
+    private final FilmService filmService;
 
-    public FilmController() {
-        storage = new InMemoryFilmStorage();
+    @Autowired
+    public FilmController(FilmService filmService) {
+        this.filmService = filmService;
     }
 
-    public FilmController(FilmStorage storage) {
-        this.storage = storage;
+    @PutMapping(value = "/films/{id}/like/{userId}")
+    public void addLike(@PathVariable("id") Integer filmId, @PathVariable("userId") Integer userId) {
+        filmService.addLike(filmId, userId);
     }
 
-    private boolean validateFilm(Film film) throws ValidationException {
-        if(film.getDescription().length() > 200) {
-            throw new ValidationException("Film description may not exceed 200 symbols");
-        }
-        if(film.getReleaseDate().isBefore(LocalDate.of(1895, 12, 28))) {
-            throw new ValidationException("Invalid film release date");
-        }
-        if(film.getDuration() <= 0) {
-            throw new ValidationException("Duration must be positive number");
-        }
-        return true;
+    @DeleteMapping(value = "/films/{id}/like/{userId}")
+    public void deleteLike(@PathVariable("id") Integer filmId, @PathVariable("userId") Integer userId) {
+        filmService.cancelLike(filmId, userId);
+    }
+
+    @GetMapping("/films/popular")
+    public List<Film> findMostPopularFilms(@RequestParam(defaultValue = "10", required = false) Integer count) {
+        return filmService.getMostLikedFilms(count);
+    }
+
+    @GetMapping("/films/{id}")
+    public Film getFilmById(@PathVariable("id") Integer filmId) {
+        return filmService.getFilmById(filmId);
     }
 
     @GetMapping ("/films")
     public List<Film> getAllFilms() {
-        return storage.getAllFilms();
+        return filmService.getAllFilms();
     }
 
     @PostMapping(value = "/films")
     public Film addFilm (@Valid @RequestBody Film film) {
-        try {
-            validateFilm(film);
-            Film addedFilm = storage.addFilm(film);
-            log.info("The following film was successfully added: {}", film);
-            return addedFilm;
-        } catch (FilmAlreadyExistsException e) {
-            log.debug("The film already exists");
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "The film already exists");
-        } catch (ValidationException e) {
-            log.debug(e.getMessage());
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
-        }
+        return filmService.addFilm(film);
     }
 
     @PutMapping(value = "/films")
     public Film updateFilm (@Valid @RequestBody Film film) {
-        try {
-            storage.updateFilm(film);
-            log.info("The following film was successfully updated: {}", film);
-            return film;
-        } catch (FilmToBeUpdatedDoesNotExistException e) {
-            log.debug("The film to be updated does not exist");
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "The film to be updated does not exist");
-        }
+        return filmService.updateFilm(film);
     }
 
 }

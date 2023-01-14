@@ -12,4 +12,6 @@ public interface FilmStorage {
     Film addFilm(Film film) throws FilmAlreadyExistsException;
 
     Film updateFilm(Film film) throws FilmToBeUpdatedDoesNotExistException;
+
+    Film getFilm(int filmId);
 }
