@@ -170,9 +170,8 @@ SELECT * FROM user WHERE user_id = 1;
 
 SELECT * FROM film WHERE film_id = 1;
 
-5) Find most popular films
+6) Find most popular films (show all films whether or not liked, ordered by amount of likes)
 -------------------------- 
---show all films whether or not liked, ordered by amount of likes
 
 SELECT f.*
 FROM film f
