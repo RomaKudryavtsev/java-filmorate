@@ -1,7 +1,7 @@
 # java-filmorate
 Template repository for Filmorate project.
 
-![DB flow chart](java-filmorate\filmorate - DB flow chart - v1.jpg?raw=true "Optional Title")
+![DB flow chart](https://github.com/RomaKudryavtsev/java-filmorate/blob/main/filmorate%20-%20DB%20flow%20chart%20-%20v1.jpg)
 
 ~~~~~~~~~~~~~~~~~~~
 TESTING USING MYSQL
