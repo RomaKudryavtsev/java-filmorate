@@ -46,4 +46,4 @@ CREATE TABLE IF NOT EXISTS friendship (
 
 INSERT INTO RATING (name) values('G'), ('PG'), ('PG-13'), ('R'), ('NC-17');
 
-INSERT INTO GENRE (name) values('Комедия'), ('Драма'), ('Мультфильм'), ('Триллер'), ('Документальный'), ('Боевик');
+INSERT INTO GENRE (name) values('РљРѕРјРµРґРёСЏ'), ('Р”СЂР°РјР°'), ('РњСѓР»СЊС‚С„РёР»СЊРј'), ('РўСЂРёР»Р»РµСЂ'), ('Р”РѕРєСѓРјРµРЅС‚Р°Р»СЊРЅС‹Р№'), ('Р‘РѕРµРІРёРє');
