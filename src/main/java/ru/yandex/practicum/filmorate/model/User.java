@@ -15,7 +15,7 @@ import java.util.Set;
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class User {
-    Set<Integer> usersFriends;
+    Set<Friendship> usersFriends;
     int id;
     @Email
     String email;
@@ -24,13 +24,13 @@ public class User {
     String name;
     LocalDate birthday;
 
-    public void addFriend(int friendId) {
-        usersFriends.add(friendId);
+    public void addFriend(Friendship friendship) {
+        usersFriends.add(friendship);
     }
 
-    public void removeFriend(int friendId) {
-        if(!usersFriends.contains(friendId)) {
+    public void removeFriend(Friendship friendship) {
+        if(!usersFriends.contains(friendship)) {
             throw new UserDoesNotExistException("User does not exist");
         }
-        usersFriends.remove(friendId);}
+        usersFriends.remove(friendship);}
 }

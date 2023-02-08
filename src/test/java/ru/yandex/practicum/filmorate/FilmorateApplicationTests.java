@@ -8,10 +8,13 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.servlet.MockMvc;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.Rating;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.time.LocalDate;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -100,12 +103,16 @@ class FilmorateApplicationTests {
     @SneakyThrows
     @Test
     void testPostFilmSuccess() {
+        LinkedHashSet<Genre> genres = new LinkedHashSet<>();
+        genres.add(Genre.builder().id(1).build());
         Film newFilm = Film.builder()
                 .name("Terminator")
                 .usersLiked(new HashSet<>())
                 .description("I'll be back!")
                 .releaseDate(LocalDate.of(1984, 10, 26))
                 .duration(108)
+                .mpa(Rating.builder().id(1).build())
+                .genres(genres)
                 .build();
         String newFilmString = objectMapper.writeValueAsString(newFilm);
         mockMvc.perform(post("/films").contentType("application/json").content(newFilmString))

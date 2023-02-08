@@ -14,4 +14,15 @@ public interface UserStorage {
     User updateUser(User user) throws UserToBeUpdatedDoesNotExistException;
 
     User getUser(int userId);
+
+    void deleteUser(int userId);
+
+    void addToFriends(int userId, int friendId);
+
+    void deleteFromFriends(int userId, int friendId);
+
+    List<User> getListOfUserFriends(int userId);
+
+    List<User> getListOfCommonFriends(int userId1, int userId2);
+
 }

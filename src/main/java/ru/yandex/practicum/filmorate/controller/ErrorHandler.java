@@ -25,6 +25,13 @@ public class ErrorHandler {
         return new ErrorResponse(e.getMessage());
     }
 
+    @ExceptionHandler({GenreNotFoundException.class, RatingNotFoundException.class})
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ErrorResponse handleGenreOrRatingNotFoundExceptions(final RuntimeException e) {
+        log.debug(e.getMessage());
+        return new ErrorResponse(e.getMessage());
+    }
+
     @ExceptionHandler({FilmAlreadyExistsException.class, UserAlreadyExistsException.class})
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ErrorResponse handleAlreadyExistsExceptions (final RuntimeException e) {

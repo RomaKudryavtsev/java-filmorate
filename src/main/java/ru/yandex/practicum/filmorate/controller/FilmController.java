@@ -3,6 +3,8 @@ package ru.yandex.practicum.filmorate.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import ru.yandex.practicum.filmorate.model.Film;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.Rating;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
 
@@ -16,6 +18,9 @@ public class FilmController {
     private final FilmService filmService;
     private final static String ALTER_LIKES_PATH = "/films/{id}/like/{userId}";
     private final static String GENERAL_FILMS_PATH = "/films";
+    private final static String GENERAL_GENRES_PATH = "/genres";
+    private final static String GENERAL_RATINGS_PATH = "/mpa";
+
 
     @Autowired
     public FilmController(FilmService filmService) {
@@ -55,6 +60,26 @@ public class FilmController {
     @PutMapping(value = GENERAL_FILMS_PATH)
     public Film updateFilm (@Valid @RequestBody Film film) {
         return filmService.updateFilm(film);
+    }
+
+    @GetMapping (GENERAL_GENRES_PATH)
+    public List<Genre> getAllGenres() {
+        return filmService.getAllGenres();
+    }
+
+    @GetMapping(GENERAL_GENRES_PATH + "/{id}")
+    public Genre getGenreById(@PathVariable("id") Integer genreId) {
+        return filmService.getGenreById(genreId);
+    }
+
+    @GetMapping(GENERAL_RATINGS_PATH)
+    public List<Rating> getAllRatings() {
+        return filmService.getAllRatings();
+    }
+
+    @GetMapping(GENERAL_RATINGS_PATH + "/{id}")
+    public Rating getRatingById(@PathVariable("id") Integer ratingId) {
+        return filmService.getRatingById(ratingId);
     }
 
 }
