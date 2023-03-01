@@ -1,15 +1,24 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import ru.yandex.practicum.filmorate.model.Film;
-import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Rating;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
-
 import javax.validation.Valid;
+import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping
@@ -18,8 +27,10 @@ public class FilmController {
     private final FilmService filmService;
     private final static String ALTER_LIKES_PATH = "/films/{id}/like/{userId}";
     private final static String GENERAL_FILMS_PATH = "/films";
+    private final static String GENERAL_SEARCH_PATH = "/films/search";
     private final static String GENERAL_GENRES_PATH = "/genres";
     private final static String GENERAL_RATINGS_PATH = "/mpa";
+    private static final String DEFAULT_TOP_FILMS_COUNT = "10";
 
 
     @Autowired
@@ -38,7 +49,7 @@ public class FilmController {
     }
 
     @GetMapping(GENERAL_FILMS_PATH + "/popular")
-    public List<Film> findMostPopularFilms(@RequestParam(defaultValue = "10", required = false) Integer count) {
+    public List<Film> findMostPopularFilms(@RequestParam(defaultValue = DEFAULT_TOP_FILMS_COUNT, required = false) Integer count) {
         return filmService.getMostLikedFilms(count);
     }
 
@@ -47,22 +58,22 @@ public class FilmController {
         return filmService.getFilmById(filmId);
     }
 
-    @GetMapping (GENERAL_FILMS_PATH)
+    @GetMapping(GENERAL_FILMS_PATH)
     public List<Film> getAllFilms() {
         return filmService.getAllFilms();
     }
 
     @PostMapping(value = GENERAL_FILMS_PATH)
-    public Film addFilm (@Valid @RequestBody Film film) {
+    public Film addFilm(@Valid @RequestBody Film film) {
         return filmService.addFilm(film);
     }
 
     @PutMapping(value = GENERAL_FILMS_PATH)
-    public Film updateFilm (@Valid @RequestBody Film film) {
+    public Film updateFilm(@Valid @RequestBody Film film) {
         return filmService.updateFilm(film);
     }
 
-    @GetMapping (GENERAL_GENRES_PATH)
+    @GetMapping(GENERAL_GENRES_PATH)
     public List<Genre> getAllGenres() {
         return filmService.getAllGenres();
     }
@@ -82,4 +93,12 @@ public class FilmController {
         return filmService.getRatingById(ratingId);
     }
 
+    @GetMapping(GENERAL_SEARCH_PATH)
+    public Collection<Film> searchFilms(@RequestParam Optional<String> query, @RequestParam("by") Optional<List<String>> categories) {
+        if (query.isPresent() && categories.isPresent()) {
+            return filmService.searchFilms(query.get(), categories.get());
+        } else {
+            return filmService.getMostLikedFilms(Integer.parseInt(DEFAULT_TOP_FILMS_COUNT));
+        }
+    }
 }

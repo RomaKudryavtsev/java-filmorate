@@ -26,6 +26,7 @@ public class Film {
     int duration;
     Rating mpa;
     LinkedHashSet<Genre> genres;
+    String director;
 
     public int getAmountOfLikes() {
         return usersLiked.size();
@@ -36,8 +37,9 @@ public class Film {
     }
 
     public void removeLike(int userId) {
-        if(!usersLiked.contains(userId)) {
+        if (!usersLiked.contains(userId)) {
             throw new UserDoesNotExistException("User does not exist");
         }
-        usersLiked.remove(userId);}
+        usersLiked.remove(userId);
+    }
 }
