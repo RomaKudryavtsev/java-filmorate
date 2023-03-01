@@ -97,9 +97,7 @@ public class DbFilmStorage implements FilmStorage {
         }, filmKeyHolder);
         int filmId = Objects.requireNonNull(filmKeyHolder.getKey()).intValue();
         if(film.getGenres() != null) {
-            film.getGenres().stream().
-                    forEach(genre -> genreFilmDao.addNewGenreFilm(filmId,
-                            handleFilmGenre(genre)));
+            film.getGenres().forEach(genre -> genreFilmDao.addNewGenreFilm(filmId, handleFilmGenre(genre)));
         }
         //NOTE: DB film_id is assigned to Java object.
         film.setId(filmId);

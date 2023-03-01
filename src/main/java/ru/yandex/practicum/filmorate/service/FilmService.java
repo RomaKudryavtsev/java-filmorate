@@ -7,6 +7,7 @@ import ru.yandex.practicum.filmorate.exceptions.FilmAlreadyExistsException;
 import ru.yandex.practicum.filmorate.exceptions.FilmDoesNotExistException;
 import ru.yandex.practicum.filmorate.exceptions.FilmToBeUpdatedDoesNotExistException;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Rating;
@@ -132,10 +133,12 @@ public class FilmService {
                     film.getName().toLowerCase().contains(query.toLowerCase())) {
                 foundFilms.add(film);
             }
-            if (categories.contains(SEARCH_CATEGORY_DIRECTOR) &&
-                    film.getDirector() != null &&
-                    film.getDirector().toLowerCase().contains(query.toLowerCase())) {
-                foundFilms.add(film);
+            if (categories.contains(SEARCH_CATEGORY_DIRECTOR) && film.getDirectors() != null) {
+                for (Director director : film.getDirectors()) {
+                    if (director.getName().toLowerCase().contains(query.toLowerCase())) {
+                        foundFilms.add(film);
+                    }
+                }
             }
         }
         return foundFilms;
