@@ -61,4 +61,9 @@ public class UserController {
     public User updateUser(@Valid @RequestBody User user) {
         return userService.updateUser(user);
     }
+
+    @DeleteMapping(value = GENERAL_USERS_PATH + "/{id}")
+    public void deleteUser(@PathVariable("id") Integer userId) {
+        userService.deleteUserById(userId);
+    }
 }
