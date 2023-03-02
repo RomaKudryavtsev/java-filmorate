@@ -64,7 +64,7 @@ public class DbFilmStorage implements FilmStorage {
             "r.rating_id as rating_id, " +
             "r.name as rating_name " +
             "from film f " +
-            "join rating r using(rating_id) " +
+            "left join rating r using(rating_id) " +
             "where f.film_id in " +
             "(" +
             "select film_id " +
