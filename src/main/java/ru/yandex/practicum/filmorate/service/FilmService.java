@@ -199,4 +199,10 @@ public class FilmService {
             throw new ReviewDoesNotExistException("Review does not exist");
         }
     }
+
+    public List<Film> getCommonFilms(int userID, int friendID) {
+        userService.checkIfUserExists(userID);
+        userService.checkIfUserExists(friendID);
+        return filmStorage.getCommonFilms(userID, friendID);
+    }
 }
