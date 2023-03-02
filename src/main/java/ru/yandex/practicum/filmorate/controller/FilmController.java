@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Genre;
@@ -20,6 +21,7 @@ public class FilmController {
     private final static String GENERAL_FILMS_PATH = "/films";
     private final static String GENERAL_GENRES_PATH = "/genres";
     private final static String GENERAL_RATINGS_PATH = "/mpa";
+    private final static String GENERAL_DIRECTORS_PATH = "/directors";
 
 
     @Autowired
@@ -80,6 +82,31 @@ public class FilmController {
     @GetMapping(GENERAL_RATINGS_PATH + "/{id}")
     public Rating getRatingById(@PathVariable("id") Integer ratingId) {
         return filmService.getRatingById(ratingId);
+    }
+
+    @GetMapping(GENERAL_DIRECTORS_PATH)
+    public List<Director> getAllDirectors() {
+        return filmService.getAllDirectors();
+    }
+
+    @GetMapping(GENERAL_DIRECTORS_PATH + "/{id}")
+    public Director getDirectorById(@PathVariable("id") Integer directorId) {
+        return filmService.getDirectorById(directorId);
+    }
+
+    @PostMapping(GENERAL_DIRECTORS_PATH)
+    public Director addDirector (@RequestBody Director director) {
+        return filmService.addDirector(director);
+    }
+
+    @DeleteMapping(GENERAL_DIRECTORS_PATH + "/{id}")
+    public void deleteDirector(@PathVariable("id") Integer directorId) {
+        filmService.deleteDirector(directorId);
+    }
+
+    @PutMapping(GENERAL_DIRECTORS_PATH)
+    public Director updateDirector(@RequestBody Director director) {
+        return filmService.updateDirector(director);
     }
 
 }
