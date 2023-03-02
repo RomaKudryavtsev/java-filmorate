@@ -130,7 +130,11 @@ public class FilmService {
     }
 
     public Director addDirector(Director director) {
-        return filmStorage.addDirector(director);
+        if (!director.getName().isBlank()) {
+            return filmStorage.addDirector(director);
+        } else {
+            throw new ValidationException("Invalid Director name");
+        }
     }
 
     public void deleteDirector(Integer directorId) {
