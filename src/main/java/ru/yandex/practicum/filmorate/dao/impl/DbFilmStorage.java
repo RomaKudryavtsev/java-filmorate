@@ -56,6 +56,27 @@ public class DbFilmStorage implements FilmStorage {
             "order by count(distinct fl.user_id) DESC " +
             "limit ?";
 
+    private final static String SELECT_COMMON_FILMS_SQL = "select f.film_id, " +
+            "f.name, " +
+            "f.description, " +
+            "f.release_date, " +
+            "f.duration, " +
+            "r.rating_id as rating_id, " +
+            "r.name as rating_name " +
+            "from film f " +
+            "left join rating r using(rating_id) " +
+            "where f.film_id in " +
+            "(" +
+            "select film_id " +
+            "from FILM_LIKES fl " +
+            "where fl.USER_ID = ? " +
+            "  and fl.film_id in " +
+            "      (select FILM_ID " +
+            "       from FILM_LIKES " +
+            "       where USER_ID = ? )" +
+            ") " +
+            "order by f.FILM_ID ASC";
+
     private final static String INSERT_NEW_FILM_SQL = "insert into film " +
             "(name, description, release_date, duration, rating_id) " +
             "values(?, ?, ?, ?, ?)";
@@ -117,7 +138,7 @@ public class DbFilmStorage implements FilmStorage {
                 , film.getDuration()
                 , handleFilmRating(film.getMpa())
                 , film.getId());
-        if(film.getGenres() != null) {
+        if (film.getGenres() != null) {
             //NOTE: First, we will add new links corresponding to the given film genre.
             List<Genre> dbGenresOfFilm = genreFilmDao.getGenresForFilm(film.getId());
             film.getGenres().stream()
@@ -150,7 +171,9 @@ public class DbFilmStorage implements FilmStorage {
     @Override
     public Film getFilm(int filmId) {
         return jdbcTemplate.query(SELECT_ALL_INFO_ON_FILM_SQL, (rs, rowNum) -> makeFilm(rs), filmId)
-                .stream().findFirst().orElseThrow(() -> {throw new FilmDoesNotExistException();});
+                .stream().findFirst().orElseThrow(() -> {
+                    throw new FilmDoesNotExistException();
+                });
     }
 
     //NOTE: Upon deletion of film, we have to delete all links genre-film and film-like.
@@ -291,5 +314,10 @@ public class DbFilmStorage implements FilmStorage {
     @Override
     public Rating getRatingById(int ratingId) {
         return ratingDao.getRatingById(ratingId);
+    }
+
+    @Override
+    public List<Film> getCommonFilms(int userID, int friendID) {
+       return jdbcTemplate.query(SELECT_COMMON_FILMS_SQL, (rs, rowNum) -> makeFilm(rs), userID, friendID);
     }
 }
