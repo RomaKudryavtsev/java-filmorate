@@ -119,4 +119,10 @@ public class FilmService {
     public Rating getRatingById(int ratingId) {
         return filmStorage.getRatingById(ratingId);
     }
+
+    public List<Film> getCommonFilms(int userID, int friendID) {
+        userService.checkIfUserExists(userID);
+        userService.checkIfUserExists(friendID);
+        return filmStorage.getCommonFilms(userID, friendID);
+    }
 }

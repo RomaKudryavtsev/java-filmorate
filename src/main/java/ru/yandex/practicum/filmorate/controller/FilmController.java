@@ -82,4 +82,12 @@ public class FilmController {
         return filmService.getRatingById(ratingId);
     }
 
+    //GET /films/common?userId={userId}&friendId={friendId}
+    @GetMapping(GENERAL_FILMS_PATH + "/common")
+    public List<Film> getCommonFilms (
+            @RequestParam int userId,
+            @RequestParam int friendId)
+    {
+        return filmService.getCommonFilms(userId, friendId);
+    }
 }
