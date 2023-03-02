@@ -101,4 +101,8 @@ public class FilmController {
             return filmService.getMostLikedFilms(Integer.parseInt(DEFAULT_TOP_FILMS_COUNT));
         }
     }
+    @DeleteMapping (value = GENERAL_FILMS_PATH + "/{id}")
+    public void deleteFilmById(@PathVariable("id") Integer filmId) {
+        filmService.deleteFilmById(filmId);
+    }
 }

@@ -6,6 +6,7 @@ import ru.yandex.practicum.filmorate.exceptions.FilmToBeUpdatedDoesNotExistExcep
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Rating;
+import ru.yandex.practicum.filmorate.model.Review;
 
 import java.util.List;
 
@@ -25,6 +26,24 @@ public interface FilmStorage {
     void addLike(int filmId, int userId);
 
     void removeLike(int filmId, int userId);
+
+    Review addReview(Review review);
+
+    Review editReview(Review review);
+
+    void deleteReviewById(Integer reviewId);
+
+    Review getReviewById(Integer reviewId);
+
+    void addLikeToReview(Integer reviewId, Integer userId);
+
+    void addDislikeToReview(Integer reviewId, Integer userId);
+
+    void removeLikeToReview(Integer reviewId, Integer userId);
+
+    void removeDislikeToReview(Integer reviewId, Integer userId);
+
+    List<Review> getReviewsForFilm(Integer filmId, Integer count);
 
     List<Genre> getAllGenres();
 

@@ -12,6 +12,7 @@ import ru.yandex.practicum.filmorate.exceptions.*;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Rating;
+import ru.yandex.practicum.filmorate.model.Review;
 
 import java.sql.Date;
 import java.sql.PreparedStatement;
@@ -30,6 +31,7 @@ public class DbFilmStorage implements FilmStorage {
     private final GenreDao genreDao;
     private final GenreFilmDao genreFilmDao;
     private final FilmLikesDao filmLikesDao;
+    private final ReviewDao reviewDao;
     private final static String SELECT_ALL_INFO_ON_ALL_FILMS_SQL = "select f.film_id," +
             "f.name," +
             "f.description," +
@@ -65,12 +67,13 @@ public class DbFilmStorage implements FilmStorage {
 
     @Autowired
     public DbFilmStorage(JdbcTemplate jdbcTemplate, RatingDao ratingDao, GenreDao genreDao, GenreFilmDao genreFilmDao,
-                         FilmLikesDao filmLikesDao) {
+                         FilmLikesDao filmLikesDao, ReviewDao reviewDao) {
         this.ratingDao = ratingDao;
         this.genreDao = genreDao;
         this.genreFilmDao = genreFilmDao;
         this.filmLikesDao = filmLikesDao;
         this.jdbcTemplate = jdbcTemplate;
+        this.reviewDao = reviewDao;
     }
 
     @Override
@@ -151,10 +154,12 @@ public class DbFilmStorage implements FilmStorage {
     }
 
     //NOTE: Upon deletion of film, we have to delete all links genre-film and film-like.
+    //NOTE: Reviews of this film also have to be deleted.
     @Override
     public void deleteFilm(int filmId) throws FilmDoesNotExistException {
         genreFilmDao.deleteGenreFilmLinksForFilm(filmId);
         filmLikesDao.deleteAllLikesForFilm(filmId);
+        reviewDao.deleteReviewsForFilm(filmId);
         jdbcTemplate.update(DELETE_FILM_SQL, filmId);
     }
 
@@ -166,6 +171,55 @@ public class DbFilmStorage implements FilmStorage {
     @Override
     public void removeLike(int filmId, int userId) {
         filmLikesDao.removeLike(filmId, userId);
+    }
+
+    @Override
+    public Review addReview(Review review) {
+        return reviewDao.addReview(review);
+    }
+
+    @Override
+    public Review editReview(Review review) {
+        return reviewDao.editReview(review);
+    }
+
+    @Override
+    public Review getReviewById(Integer reviewId) {
+        return reviewDao.getReviewById(reviewId);
+    }
+
+    @Override
+    public void addLikeToReview(Integer reviewId, Integer userId) {
+        reviewDao.addLike(reviewId, userId);
+    }
+
+    @Override
+    public void addDislikeToReview(Integer reviewId, Integer userId) {
+        reviewDao.addDislike(reviewId, userId);
+    }
+
+    @Override
+    public void removeLikeToReview(Integer reviewId, Integer userId) {
+        reviewDao.removeLike(reviewId, userId);
+    }
+
+    @Override
+    public void removeDislikeToReview(Integer reviewId, Integer userId) {
+        reviewDao.removeDislike(reviewId, userId);
+    }
+
+    @Override
+    public void deleteReviewById(Integer reviewId) {
+        reviewDao.deleteReviewById(reviewId);
+    }
+
+    @Override
+    public List<Review> getReviewsForFilm(Integer filmId, Integer count) {
+        if(filmId != null) {
+            return reviewDao.getReviewsForFilm(filmId, count);
+        } else {
+            return reviewDao.getAllReviews(count);
+        }
     }
 
     private int handleFilmRating(Rating inputRating) {
