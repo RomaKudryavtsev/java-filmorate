@@ -7,6 +7,7 @@ import ru.yandex.practicum.filmorate.exceptions.FilmAlreadyExistsException;
 import ru.yandex.practicum.filmorate.exceptions.FilmDoesNotExistException;
 import ru.yandex.practicum.filmorate.exceptions.FilmToBeUpdatedDoesNotExistException;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Rating;
@@ -118,5 +119,25 @@ public class FilmService {
 
     public Rating getRatingById(int ratingId) {
         return filmStorage.getRatingById(ratingId);
+    }
+
+    public List<Director> getAllDirectors() {
+        return filmStorage.getAllDirectors();
+    }
+
+    public Director getDirectorById(Integer directorId) {
+        return filmStorage.getDirectorById(directorId);
+    }
+
+    public Director addDirector(Director director) {
+        return filmStorage.addDirector(director);
+    }
+
+    public void deleteDirector(Integer directorId) {
+        filmStorage.deleteDirector(directorId);
+    }
+
+    public Director updateDirector(Director director) {
+        return filmStorage.updateDirector(director);
     }
 }

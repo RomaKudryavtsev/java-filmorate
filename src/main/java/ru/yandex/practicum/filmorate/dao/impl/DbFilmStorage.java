@@ -9,6 +9,7 @@ import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.dao.*;
 import ru.yandex.practicum.filmorate.exceptions.*;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Rating;
@@ -30,6 +31,7 @@ public class DbFilmStorage implements FilmStorage {
     private final GenreDao genreDao;
     private final GenreFilmDao genreFilmDao;
     private final FilmLikesDao filmLikesDao;
+    private final DirectorDao directorDao;
     private final static String SELECT_ALL_INFO_ON_ALL_FILMS_SQL = "select f.film_id," +
             "f.name," +
             "f.description," +
@@ -65,11 +67,12 @@ public class DbFilmStorage implements FilmStorage {
 
     @Autowired
     public DbFilmStorage(JdbcTemplate jdbcTemplate, RatingDao ratingDao, GenreDao genreDao, GenreFilmDao genreFilmDao,
-                         FilmLikesDao filmLikesDao) {
+                         FilmLikesDao filmLikesDao, DirectorDao directorDao) {
         this.ratingDao = ratingDao;
         this.genreDao = genreDao;
         this.genreFilmDao = genreFilmDao;
         this.filmLikesDao = filmLikesDao;
+        this.directorDao = directorDao;
         this.jdbcTemplate = jdbcTemplate;
     }
 
@@ -239,5 +242,30 @@ public class DbFilmStorage implements FilmStorage {
     @Override
     public Rating getRatingById(int ratingId) {
         return ratingDao.getRatingById(ratingId);
+    }
+
+    @Override
+    public List<Director> getAllDirectors() {
+        return directorDao.getAllDirectors();
+    }
+
+    @Override
+    public Director getDirectorById(Integer directorId) {
+        return directorDao.getDirectorById(directorId);
+    }
+
+    @Override
+    public Director addDirector(Director director) {
+        return directorDao.addDirector(director);
+    }
+
+    @Override
+    public void deleteDirector(Integer directorId) {
+        directorDao.deleteDirector(directorId);
+    }
+
+    @Override
+    public Director updateDirector(Director director) {
+        return directorDao.updateDirector(director);
     }
 }
