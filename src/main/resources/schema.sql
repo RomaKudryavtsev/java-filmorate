@@ -49,6 +49,12 @@ CREATE TABLE IF NOT EXISTS director (
   name VARCHAR(30) NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS director_film (
+  film_id integer NOT NULL REFERENCES film(film_id),
+  director_id integer NOT NULL REFERENCES director(director_id),
+  PRIMARY KEY (film_id, director_id)
+);
+
 DELETE FROM FRIENDSHIP ;
 ALTER TABLE FRIENDSHIP ALTER COLUMN friendship_id RESTART WITH 1;
 DELETE FROM FILM_LIKES ;
@@ -61,9 +67,10 @@ DELETE FROM FILM ;
 ALTER TABLE FILM ALTER COLUMN film_id RESTART WITH 1;
 DELETE FROM RATING ;
 ALTER TABLE RATING ALTER COLUMN rating_id RESTART WITH 1;
+DELETE FROM director_film ;
 DELETE FROM DIRECTOR ;
 ALTER TABLE DIRECTOR ALTER COLUMN director_id RESTART WITH 1;
 
 INSERT INTO RATING (name) values('G'), ('PG'), ('PG-13'), ('R'), ('NC-17');
 
-INSERT INTO GENRE (name) values('�������'), ('�����'), ('����������'), ('�������'), ('��������������'), ('������');
+INSERT INTO GENRE (name) values('Комедия'), ('Драма'), ('Мультфильм'), ('Триллер'), ('Документальный'), ('Боевик');
