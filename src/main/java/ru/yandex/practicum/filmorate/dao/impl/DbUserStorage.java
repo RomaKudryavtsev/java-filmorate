@@ -8,6 +8,7 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.dao.FilmLikesDao;
+import ru.yandex.practicum.filmorate.dao.ReviewDao;
 import ru.yandex.practicum.filmorate.dao.UserStorage;
 import ru.yandex.practicum.filmorate.exceptions.UserAlreadyExistsException;
 import ru.yandex.practicum.filmorate.exceptions.UserDoesNotExistException;
@@ -31,6 +32,7 @@ import java.util.Set;
 public class DbUserStorage implements UserStorage {
     private final JdbcTemplate jdbcTemplate;
     private final FilmLikesDao filmLikesDao;
+    private final ReviewDao reviewDao;
 
     private final static String SELECT_ALL_INFO_ON_ALL_USERS_SQL = "select * from users";
     private final static String SELECT_ALL_INFO_ON_USER_SQL = "select * from users where user_id = ?";
@@ -76,9 +78,10 @@ public class DbUserStorage implements UserStorage {
     private final static String DELETE_USER_SQL = "delete from users where user_id = ?";
 
     @Autowired
-    public DbUserStorage(JdbcTemplate jdbcTemplate, FilmLikesDao filmLikesDao) {
+    public DbUserStorage(JdbcTemplate jdbcTemplate, FilmLikesDao filmLikesDao, ReviewDao reviewDao) {
         this.filmLikesDao = filmLikesDao;
         this.jdbcTemplate = jdbcTemplate;
+        this.reviewDao = reviewDao;
     }
 
     @Override
@@ -122,10 +125,12 @@ public class DbUserStorage implements UserStorage {
                 .stream().findFirst().orElseThrow(() -> {throw new UserDoesNotExistException();});
     }
 
+    //NOTE: Upon deletion of user, his friendships, likes and reviews have to be deleted.
     @Override
     public void deleteUser(int userId) {
         jdbcTemplate.update(DELETE_ALL_USER_FRIENDSHIPS_SQL, userId, userId);
         filmLikesDao.deleteAllLikesOfUser(userId);
+        reviewDao.deleteReviewsForUser(userId);
         jdbcTemplate.update(DELETE_USER_SQL, userId);
     }
 

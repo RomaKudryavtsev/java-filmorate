@@ -47,22 +47,22 @@ public class FilmController {
         return filmService.getFilmById(filmId);
     }
 
-    @GetMapping (GENERAL_FILMS_PATH)
+    @GetMapping(GENERAL_FILMS_PATH)
     public List<Film> getAllFilms() {
         return filmService.getAllFilms();
     }
 
     @PostMapping(value = GENERAL_FILMS_PATH)
-    public Film addFilm (@Valid @RequestBody Film film) {
+    public Film addFilm(@Valid @RequestBody Film film) {
         return filmService.addFilm(film);
     }
 
     @PutMapping(value = GENERAL_FILMS_PATH)
-    public Film updateFilm (@Valid @RequestBody Film film) {
+    public Film updateFilm(@Valid @RequestBody Film film) {
         return filmService.updateFilm(film);
     }
 
-    @GetMapping (GENERAL_GENRES_PATH)
+    @GetMapping(GENERAL_GENRES_PATH)
     public List<Genre> getAllGenres() {
         return filmService.getAllGenres();
     }
@@ -82,12 +82,15 @@ public class FilmController {
         return filmService.getRatingById(ratingId);
     }
 
-    //GET /films/common?userId={userId}&friendId={friendId}
+    @DeleteMapping(value = GENERAL_FILMS_PATH + "/{id}")
+    public void deleteFilmById(@PathVariable("id") Integer filmId) {
+        filmService.deleteFilmById(filmId);
+    }
+
     @GetMapping(GENERAL_FILMS_PATH + "/common")
-    public List<Film> getCommonFilms (
+    public List<Film> getCommonFilms(
             @RequestParam int userId,
-            @RequestParam int friendId)
-    {
+            @RequestParam int friendId) {
         return filmService.getCommonFilms(userId, friendId);
     }
 }
