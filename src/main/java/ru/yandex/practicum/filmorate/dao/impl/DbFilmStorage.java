@@ -9,6 +9,7 @@ import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.dao.*;
 import ru.yandex.practicum.filmorate.exceptions.*;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Rating;
@@ -31,6 +32,8 @@ public class DbFilmStorage implements FilmStorage {
     private final GenreDao genreDao;
     private final GenreFilmDao genreFilmDao;
     private final FilmLikesDao filmLikesDao;
+    private final DirectorDao directorDao;
+    private final DirectorFilmDao directorFilmDao;
     private final ReviewDao reviewDao;
     private final static String SELECT_ALL_INFO_ON_ALL_FILMS_SQL = "select f.film_id," +
             "f.name," +
@@ -86,15 +89,47 @@ public class DbFilmStorage implements FilmStorage {
 
     private final static String DELETE_FILM_SQL = "delete from film where film_id = ?";
 
+    private final static String SELECT_FILMS_FOR_DIRECTOR_SORT_BY_YEAR = "SELECT" +
+            " f.film_id," +
+            " f.name," +
+            " f.description," +
+            " f.release_date," +
+            " f.duration," +
+            " r.rating_id as rating_id," +
+            " r.name as rating_name" +
+            " FROM film f" +
+            " INNER JOIN rating r using (rating_id)" +
+            " INNER JOIN director_film df using (film_id)" +
+            " WHERE df.director_id = ?" +
+            " ORDER BY f.release_date";
+    private final static String SELECT_FILMS_FOR_DIRECTOR_SORT_BY_LIKES = "SELECT" +
+            " f.film_id," +
+            " f.name," +
+            " f.description," +
+            " f.release_date," +
+            " f.duration," +
+            " r.rating_id as rating_id," +
+            " r.name as rating_name," +
+            " count (fl.user_id) as count_likes" +
+            " FROM film f" +
+            " INNER JOIN rating r using (rating_id)" +
+            " INNER JOIN director_film df USING (film_id)" +
+            " LEFT JOIN film_likes fl USING (film_id)" +
+            " WHERE df.director_id = ?" +
+            " GROUP BY f.film_id" +
+            " ORDER BY count_likes";
+
     @Autowired
     public DbFilmStorage(JdbcTemplate jdbcTemplate, RatingDao ratingDao, GenreDao genreDao, GenreFilmDao genreFilmDao,
-                         FilmLikesDao filmLikesDao, ReviewDao reviewDao) {
+                         FilmLikesDao filmLikesDao, DirectorDao directorDao, DirectorFilmDao directorFilmDao, ReviewDao reviewDao) {
         this.ratingDao = ratingDao;
         this.genreDao = genreDao;
         this.genreFilmDao = genreFilmDao;
         this.filmLikesDao = filmLikesDao;
+        this.directorDao = directorDao;
         this.jdbcTemplate = jdbcTemplate;
         this.reviewDao = reviewDao;
+        this.directorFilmDao = directorFilmDao;
     }
 
     @Override
@@ -123,7 +158,12 @@ public class DbFilmStorage implements FilmStorage {
         if(film.getGenres() != null) {
             film.getGenres().forEach(genre -> genreFilmDao.addNewGenreFilm(filmId, handleFilmGenre(genre)));
         }
-        //NOTE: DB film_id is assigned to Java object.
+        if (film.getDirectors() != null) {
+            film.getDirectors().stream().
+                    forEach(director -> directorFilmDao.addNewFilmDirector(filmId,
+                            handleFilmDirector(director)));
+
+        }        //NOTE: DB film_id is assigned to Java object.
         film.setId(filmId);
         log.info("The following film was successfully added: {}", film);
         return film;
@@ -138,7 +178,7 @@ public class DbFilmStorage implements FilmStorage {
                 , film.getDuration()
                 , handleFilmRating(film.getMpa())
                 , film.getId());
-        if (film.getGenres() != null) {
+        if(film.getGenres() != null) {
             //NOTE: First, we will add new links corresponding to the given film genre.
             List<Genre> dbGenresOfFilm = genreFilmDao.getGenresForFilm(film.getId());
             film.getGenres().stream()
@@ -159,13 +199,31 @@ public class DbFilmStorage implements FilmStorage {
                             .contains(genre.getId()))
                     .forEach((genre) -> genreFilmDao.deleteGenreFilm(film.getId(), genre.getId()));
         }
+        if (film.getDirectors() != null) {
+            List<Director> dbDirectorsOfFilm = directorFilmDao.getDirectorsForFilm(film.getId());
+            film.getDirectors().stream()
+                    .filter((director) -> {
+                        return !dbDirectorsOfFilm.stream().map(Director::getId).collect(Collectors.toSet())
+                                .contains(director.getId());
+                    })
+                    .forEach((director -> {
+                        directorFilmDao.addNewFilmDirector(film.getId(),handleFilmDirector(director));
+                    }));
+            dbDirectorsOfFilm.stream().filter(director -> !film.getDirectors().stream()
+                    .map(Director::getId)
+                    .collect(Collectors.toSet())
+                    .contains(director.getId()))
+                    .forEach((director) -> directorFilmDao.deleteDirectorFilm(film.getId(),director.getId()));
+        } else {
+            directorFilmDao.deleteAllDirectorsForFilm(film.getId());
+        }
         film.setMpa(Rating.builder()
                 .id(film.getMpa().getId())
                 .name(ratingDao.getRatingById(film.getMpa().getId()).getName())
                 .build());
         film.setUsersLiked(new HashSet<>(filmLikesDao.getLikesOfFilm(film.getId())));
         log.info("The following film was successfully updated: {}", film);
-        return film;
+        return getFilm(film.getId());
     }
 
     @Override
@@ -269,6 +327,16 @@ public class DbFilmStorage implements FilmStorage {
         return outputGenreId;
     }
 
+    private int handleFilmDirector(Director inputDirector) {
+        int outputDirectorId;
+        try {
+            outputDirectorId = directorDao.getDirectorById(inputDirector.getId()).getId();
+        } catch (DirectorNotFoundException e) {
+            outputDirectorId = directorDao.addDirector(inputDirector).getId();
+        }
+        return outputDirectorId;
+    }
+
     private Film makeFilm(ResultSet rs) throws SQLException {
         int id = rs.getInt("film_id");
         String name = rs.getString("name");
@@ -291,8 +359,10 @@ public class DbFilmStorage implements FilmStorage {
                 .build();
         Set<Integer> usersLiked = new HashSet<>(filmLikesDao.getLikesOfFilm(result.getId()));
         LinkedHashSet<Genre> genres = new LinkedHashSet<>(genreFilmDao.getGenresForFilm(result.getId()));
-        result.setUsersLiked(usersLiked);
+        Set<Director> directors = new HashSet<>(directorFilmDao.getDirectorsForFilm(result.getId()));
+        result.setDirectors(directors);
         result.setGenres(genres);
+        result.setUsersLiked(usersLiked);
         return result;
     }
 
@@ -314,6 +384,50 @@ public class DbFilmStorage implements FilmStorage {
     @Override
     public Rating getRatingById(int ratingId) {
         return ratingDao.getRatingById(ratingId);
+    }
+
+    @Override
+    public List<Director> getAllDirectors() {
+        return directorDao.getAllDirectors();
+    }
+
+    @Override
+    public Director getDirectorById(Integer directorId) {
+        return directorDao.getDirectorById(directorId);
+    }
+
+    @Override
+    public Director addDirector(Director director) {
+        return directorDao.addDirector(director);
+    }
+
+    @Override
+    public void deleteDirector(Integer directorId) {
+        directorFilmDao.deleteAllDirectorLinks(directorId);
+        directorDao.deleteDirector(directorId);
+    }
+
+    @Override
+    public Director updateDirector(Director director) {
+        return directorDao.updateDirector(director);
+    }
+
+    @Override
+    public List<Film> getFilmsForDirectorSortByYear(Integer directorId) {
+        List<Film> list = jdbcTemplate.query(SELECT_FILMS_FOR_DIRECTOR_SORT_BY_YEAR,(rs,rowNum) -> makeFilm(rs),directorId);
+        if (list.isEmpty()) {
+            throw new FilmDoesNotExistException("Нет фильмов для режиссера");
+        } else
+            return list;
+    }
+
+    @Override
+    public List<Film> getFilmsForDirectorSortByLikes(Integer directorId) {
+        List<Film> list = jdbcTemplate.query(SELECT_FILMS_FOR_DIRECTOR_SORT_BY_LIKES, (rs, rowNum) -> makeFilm(rs),directorId);
+        if (list.isEmpty()) {
+            throw new FilmDoesNotExistException("Нет фильмов для режиссера");
+        } else
+        return list;
     }
 
     @Override

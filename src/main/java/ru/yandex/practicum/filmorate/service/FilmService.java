@@ -8,6 +8,13 @@ import ru.yandex.practicum.filmorate.exceptions.FilmDoesNotExistException;
 import ru.yandex.practicum.filmorate.exceptions.FilmToBeUpdatedDoesNotExistException;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.Director;
+
+import ru.yandex.practicum.filmorate.exceptions.FilmAlreadyExistsException;
+import ru.yandex.practicum.filmorate.exceptions.FilmDoesNotExistException;
+import ru.yandex.practicum.filmorate.exceptions.FilmToBeUpdatedDoesNotExistException;
+import ru.yandex.practicum.filmorate.exceptions.ValidationException;
+import ru.yandex.practicum.filmorate.model.Director;
+import ru.yandex.practicum.filmorate.exceptions.*;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Rating;
@@ -119,8 +126,7 @@ public class FilmService {
                 .collect(Collectors.toSet()).contains(film.getId())) {
             throw new FilmToBeUpdatedDoesNotExistException("Film to be updated does not exist");
         }
-        filmStorage.updateFilm(film);
-        return film;
+        return filmStorage.updateFilm(film);
     }
 
     public List<Genre> getAllGenres() {
@@ -137,6 +143,42 @@ public class FilmService {
 
     public Rating getRatingById(int ratingId) {
         return filmStorage.getRatingById(ratingId);
+    }
+
+    public List<Director> getAllDirectors() {
+        return filmStorage.getAllDirectors();
+    }
+
+    public Director getDirectorById(Integer directorId) {
+        return filmStorage.getDirectorById(directorId);
+    }
+
+    public Director addDirector(Director director) {
+            if (director.getName()!= null) {
+                if (!director.getName().isBlank()) {
+                    return filmStorage.addDirector(director);
+                } else {
+                    throw new ValidationException("Invalid Director name");
+                }
+            } else throw new ValidationException("Invalid director");
+    }
+
+    public void deleteDirector(Integer directorId) {
+        filmStorage.deleteDirector(directorId);
+    }
+
+    public Director updateDirector(Director director) {
+        return filmStorage.updateDirector(director);
+    }
+
+    public List<Film> getFilmsForDirector(String sortBy, Integer directorId) {
+        if (sortBy.equals("year")) {
+            return filmStorage.getFilmsForDirectorSortByYear(directorId);
+        }
+        if (sortBy.equals("likes")) {
+            return filmStorage.getFilmsForDirectorSortByLikes(directorId);
+        }
+        throw new ValidationException("Invalid request param");
     }
 
     public Collection<Film> searchFilms(String query, List<String> categories) {
