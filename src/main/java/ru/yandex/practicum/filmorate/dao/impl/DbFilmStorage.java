@@ -59,6 +59,55 @@ public class DbFilmStorage implements FilmStorage {
             "order by count(distinct fl.user_id) DESC " +
             "limit ?";
 
+    private final static String SELECT_MOST_FILMS_BY_YEAR = "select f.FILM_ID as film_id, " +
+            "f.NAME as name, " +
+            "f.DESCRIPTION as description, " +
+            "f.RELEASE_DATE as release_date, " +
+            "f.DURATION as duration, " +
+            "f.RATING_ID as rating_id, " +
+            "r.NAME as rating_name, " +
+            "from FILM as f " +
+            "left join FILM_LIKES as l on f.FILM_ID = l.FILM_ID " +
+            "left join RATING as r on r.RATING_ID = f.RATING_ID " +
+            "where extract(year from f.RELEASE_DATE) = ? " +
+            "group by f.FILM_ID " +
+            "order by COUNT(l.USER_ID) desc " +
+            "limit ?";
+
+    private final static String SELECT_MOST_FILMS_BY_GENRE = "select f.FILM_ID as film_id, " +
+            "g.GENRE_ID as genre, " +
+            "f.NAME as name, " +
+            "f.DESCRIPTION as description, " +
+            "f.RELEASE_DATE as release_date, " +
+            " f.DURATION as duration, " +
+            "f.RATING_ID as rating_id, " +
+            "r.NAME as rating_name " +
+            "from FILM as f " +
+            "left join FILM_LIKES as l on f.FILM_ID = l.FILM_ID " +
+            "left join GENRE_FILM as g on g.FILM_ID = f.FILM_ID " +
+            "left join RATING as r on r.RATING_ID = f.RATING_ID " +
+            "where g.GENRE_ID = ? " +
+            "group by f.FILM_ID " +
+            "order by COUNT(l.USER_ID) desc " +
+            "limit ?";
+
+    private final static String SELECT_MOST_FILMS_BY_GENRE_AND_YEAR = " select f.FILM_ID as film_id, " +
+            "g.GENRE_ID as genre, " +
+            "f.NAME as name, " +
+            "f.DESCRIPTION as description, " +
+            "f.RELEASE_DATE as release_date, " +
+            "f.DURATION as duration, " +
+            "f.RATING_ID as rating_id, " +
+            "r.NAME as rating_name " +
+            "from FILM as f " +
+            "left join FILM_LIKES as l on f.FILM_ID = l.FILM_ID " +
+            "left join GENRE_FILM as g on g.FILM_ID = f.FILM_ID " +
+            "left join RATING as r on r.RATING_ID = f.RATING_ID " +
+            "where g.GENRE_ID = ? and extract(year from f.RELEASE_DATE) = ? " +
+            "group by f.FILM_ID " +
+            "order by COUNT(l.USER_ID) desc " +
+            "limit ?";
+
     private final static String SELECT_COMMON_FILMS_SQL = "select f.film_id, " +
             "f.name, " +
             "f.description, " +
@@ -138,8 +187,17 @@ public class DbFilmStorage implements FilmStorage {
     }
 
     @Override
-    public List<Film> getMostLikedFilms(int count) {
-        return jdbcTemplate.query(SELECT_MOST_LIKED_SQL, (rs, rowNum) -> makeFilm(rs), count);
+    public List<Film> getMostLikedFilms(int count, int genreId, String year) {
+        if ((genreId == 0) && (Objects.equals(year, "null"))) {
+            return jdbcTemplate.query(SELECT_MOST_LIKED_SQL, (rs, rowNum) -> makeFilm(rs), count);
+        } else if (genreId == 0){
+            return jdbcTemplate.query(SELECT_MOST_FILMS_BY_YEAR, (rs, rowNum) -> makeFilm(rs), year, count);
+        } else if (Objects.equals(year, "null")){
+            return jdbcTemplate.query(SELECT_MOST_FILMS_BY_GENRE, (rs, rowNum) -> makeFilm(rs), genreId, count);
+        } else {
+            return jdbcTemplate.query(SELECT_MOST_FILMS_BY_GENRE_AND_YEAR,
+                    (rs, rowNum) -> makeFilm(rs), genreId, year, count);
+        }
     }
 
     @Override
