@@ -163,9 +163,9 @@ public class FilmService {
             return filmStorage.getFilmsForDirectorSortByYear(directorId);
         }
         if (sortBy.equals("likes")) {
-            return filmStorage.getFilmsForDirectorSortByLikes(directorId);//filmStorage.getFilmsForDirectorSortByLikes(directorId);
+            return filmStorage.getFilmsForDirectorSortByLikes(directorId);
         }
-        throw new ValidationException("sad");
+        throw new ValidationException("Invalid request param");
     }
 
     //Roma: new methods for ReviewController
