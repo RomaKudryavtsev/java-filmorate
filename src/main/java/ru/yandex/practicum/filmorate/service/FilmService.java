@@ -101,8 +101,7 @@ public class FilmService {
                 .collect(Collectors.toSet()).contains(film.getId())) {
             throw new FilmToBeUpdatedDoesNotExistException("Film to be updated does not exist");
         }
-        filmStorage.updateFilm(film);
-        return film;
+        return filmStorage.updateFilm(film);
     }
 
     public List<Genre> getAllGenres() {
@@ -143,5 +142,15 @@ public class FilmService {
 
     public Director updateDirector(Director director) {
         return filmStorage.updateDirector(director);
+    }
+
+    public List<Film> getFilmsForDirector(String sortBy, Integer directorId) {
+        if (sortBy.equals("year")) {
+            return filmStorage.getFilmsForDirectorSortByYear(directorId);
+        }
+        if (sortBy.equals("likes")) {
+            return filmStorage.getFilmsForDirectorSortByLikes(directorId);//filmStorage.getFilmsForDirectorSortByLikes(directorId);
+        }
+        throw new ValidationException("sad");
     }
 }

@@ -44,4 +44,9 @@ public interface FilmStorage {
     void deleteDirector(Integer directorId);
 
     Director updateDirector(Director director);
+
+    List<Film> getFilmsForDirectorSortByYear(Integer directorId);
+
+    List<Film> getFilmsForDirectorSortByLikes(Integer directorId);
+
 }
