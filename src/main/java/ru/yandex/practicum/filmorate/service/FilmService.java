@@ -2,27 +2,31 @@ package ru.yandex.practicum.filmorate.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
+import ru.yandex.practicum.filmorate.dao.FilmStorage;
 import ru.yandex.practicum.filmorate.exceptions.FilmAlreadyExistsException;
 import ru.yandex.practicum.filmorate.exceptions.FilmDoesNotExistException;
 import ru.yandex.practicum.filmorate.exceptions.FilmToBeUpdatedDoesNotExistException;
+import ru.yandex.practicum.filmorate.exceptions.ReviewDoesNotExistException;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.Director;
-import ru.yandex.practicum.filmorate.exceptions.*;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Rating;
-import ru.yandex.practicum.filmorate.dao.FilmStorage;
 import ru.yandex.practicum.filmorate.model.Review;
 
 import java.time.LocalDate;
+import java.util.Collection;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
 public class FilmService {
+    private static final String SEARCH_CATEGORY_DIRECTOR = "director";
+    private static final String SEARCH_CATEGORY_TITLE = "title";
+
     //NOTE: FilmService is dependent from FilmStorage
     private final FilmStorage filmStorage;
     private final UserService userService;
@@ -34,20 +38,20 @@ public class FilmService {
     }
 
     private boolean validateFilm(Film film) throws ValidationException {
-        if(film.getDescription().length() > 200) {
+        if (film.getDescription().length() > 200) {
             throw new ValidationException("Film description may not exceed 200 symbols");
         }
-        if(film.getReleaseDate().isBefore(LocalDate.of(1895, 12, 28))) {
+        if (film.getReleaseDate().isBefore(LocalDate.of(1895, 12, 28))) {
             throw new ValidationException("Invalid film release date");
         }
-        if(film.getDuration() <= 0) {
+        if (film.getDuration() <= 0) {
             throw new ValidationException("Duration must be positive number");
         }
         return true;
     }
 
     private boolean checkIfFilmExists(Integer filmId) {
-        if(filmId != null) {
+        if (filmId != null) {
             Set<Integer> allCurrentFilmIds = filmStorage.getAllFilms().stream().map(Film::getId)
                     .collect(Collectors.toSet());
             if (!allCurrentFilmIds.contains(filmId)) {
@@ -88,11 +92,11 @@ public class FilmService {
     }
 
     public Film addFilm(Film film) {
-        if(film.getUsersLiked() == null) {
+        if (film.getUsersLiked() == null) {
             film.setUsersLiked(new HashSet<>());
         }
         validateFilm(film);
-        if(filmStorage.getAllFilms().stream().map(Film::getId)
+        if (filmStorage.getAllFilms().stream().map(Film::getId)
                 .collect(Collectors.toSet()).contains(film.getId())) {
             throw new FilmAlreadyExistsException("This film already exists");
         }
@@ -111,7 +115,7 @@ public class FilmService {
     }
 
     public Film updateFilm(Film film) {
-        if(!filmStorage.getAllFilms().stream().map(Film::getId)
+        if (!filmStorage.getAllFilms().stream().map(Film::getId)
                 .collect(Collectors.toSet()).contains(film.getId())) {
             throw new FilmToBeUpdatedDoesNotExistException("Film to be updated does not exist");
         }
@@ -170,6 +174,25 @@ public class FilmService {
         throw new ValidationException("Invalid request param");
     }
 
+    public Collection<Film> searchFilms(String query, List<String> categories) {
+        List<Film> films = getMostLikedFilms(-1);
+        Set<Film> foundFilms = new LinkedHashSet<>();
+        for (Film film : films) {
+            if (categories.contains(SEARCH_CATEGORY_TITLE) &&
+                    film.getName().toLowerCase().contains(query.toLowerCase())) {
+                foundFilms.add(film);
+            }
+            if (categories.contains(SEARCH_CATEGORY_DIRECTOR) && film.getDirectors() != null) {
+                for (Director director : film.getDirectors()) {
+                    if (director.getName().toLowerCase().contains(query.toLowerCase())) {
+                        foundFilms.add(film);
+                    }
+                }
+            }
+        }
+        return foundFilms;
+    }
+
     //Roma: new methods for ReviewController
     public Review addReview(Review review) {
         checkIfFilmExists(review.getFilmId());
@@ -178,7 +201,7 @@ public class FilmService {
     }
 
     public Review editReview(Review review) {
-        if(checkIfReviewExists(review.getReviewId())) {
+        if (checkIfReviewExists(review.getReviewId())) {
             checkIfFilmExists(review.getFilmId());
             userService.checkIfUserExists(review.getUserId());
             return filmStorage.editReview(review);
@@ -197,7 +220,7 @@ public class FilmService {
     }
 
     public void deleteReviewById(Integer reviewId) {
-        if(checkIfReviewExists(reviewId)) {
+        if (checkIfReviewExists(reviewId)) {
             filmStorage.deleteReviewById(reviewId);
         } else {
             throw new ReviewDoesNotExistException("Review does not exist");
@@ -205,7 +228,7 @@ public class FilmService {
     }
 
     public void addLikeToReview(Integer reviewId, Integer userId) {
-        if(checkIfReviewExists(reviewId)) {
+        if (checkIfReviewExists(reviewId)) {
             userService.checkIfUserExists(userId);
             filmStorage.addLikeToReview(reviewId, userId);
         } else {
@@ -214,7 +237,7 @@ public class FilmService {
     }
 
     public void addDislikeToReview(Integer reviewId, Integer userId) {
-        if(checkIfReviewExists(reviewId)) {
+        if (checkIfReviewExists(reviewId)) {
             userService.checkIfUserExists(userId);
             filmStorage.addDislikeToReview(reviewId, userId);
         } else {
@@ -223,7 +246,7 @@ public class FilmService {
     }
 
     public void removeLikeToReview(Integer reviewId, Integer userId) {
-        if(checkIfReviewExists(reviewId)) {
+        if (checkIfReviewExists(reviewId)) {
             userService.checkIfUserExists(userId);
             filmStorage.removeLikeToReview(reviewId, userId);
         } else {
@@ -232,7 +255,7 @@ public class FilmService {
     }
 
     public void removeDislikeToReview(Integer reviewId, Integer userId) {
-        if(checkIfReviewExists(reviewId)) {
+        if (checkIfReviewExists(reviewId)) {
             userService.checkIfUserExists(userId);
             filmStorage.removeDislikeToReview(reviewId, userId);
         } else {
