@@ -32,7 +32,6 @@ public class FilmController {
     private final static String GENERAL_GENRES_PATH = "/genres";
     private final static String GENERAL_RATINGS_PATH = "/mpa";
     private final static String GENERAL_DIRECTORS_PATH = "/directors";
-    private static final String DEFAULT_TOP_FILMS_COUNT = "10";
 
 
     @Autowired
@@ -51,7 +50,7 @@ public class FilmController {
     }
 
     @GetMapping(GENERAL_FILMS_PATH + "/popular")
-    public List<Film> findMostPopularFilms(@RequestParam(defaultValue = DEFAULT_TOP_FILMS_COUNT, required = false) Integer count) {
+    public List<Film> findMostPopularFilms(@RequestParam(defaultValue = "10", required = false) Integer count) {
         return filmService.getMostLikedFilms(count);
     }
 
@@ -60,22 +59,22 @@ public class FilmController {
         return filmService.getFilmById(filmId);
     }
 
-    @GetMapping (GENERAL_FILMS_PATH)
+    @GetMapping(GENERAL_FILMS_PATH)
     public List<Film> getAllFilms() {
         return filmService.getAllFilms();
     }
 
     @PostMapping(value = GENERAL_FILMS_PATH)
-    public Film addFilm (@Valid @RequestBody Film film) {
+    public Film addFilm(@Valid @RequestBody Film film) {
         return filmService.addFilm(film);
     }
 
     @PutMapping(value = GENERAL_FILMS_PATH)
-    public Film updateFilm (@Valid @RequestBody Film film) {
+    public Film updateFilm(@Valid @RequestBody Film film) {
         return filmService.updateFilm(film);
     }
 
-    @GetMapping (GENERAL_GENRES_PATH)
+    @GetMapping(GENERAL_GENRES_PATH)
     public List<Genre> getAllGenres() {
         return filmService.getAllGenres();
     }
@@ -100,7 +99,7 @@ public class FilmController {
         if (query.isPresent() && categories.isPresent()) {
             return filmService.searchFilms(query.get(), categories.get());
         } else {
-            return filmService.getMostLikedFilms(Integer.parseInt(DEFAULT_TOP_FILMS_COUNT));
+            return filmService.getMostLikedFilms(-1);
         }
     }
 
@@ -115,7 +114,7 @@ public class FilmController {
     }
 
     @PostMapping(GENERAL_DIRECTORS_PATH)
-    public Director addDirector (@RequestBody Director director) {
+    public Director addDirector(@RequestBody Director director) {
         return filmService.addDirector(director);
     }
 
@@ -130,8 +129,8 @@ public class FilmController {
     }
 
     @GetMapping("/films/director/{directorId}")
-    public List<Film> getFilmsForDirector (@RequestParam(name = "sortBy") String sortBy, @PathVariable Integer directorId) {
-        return filmService.getFilmsForDirector(sortBy,directorId);
+    public List<Film> getFilmsForDirector(@RequestParam(name = "sortBy") String sortBy, @PathVariable Integer directorId) {
+        return filmService.getFilmsForDirector(sortBy, directorId);
     }
 
     @DeleteMapping(value = GENERAL_FILMS_PATH + "/{id}")
