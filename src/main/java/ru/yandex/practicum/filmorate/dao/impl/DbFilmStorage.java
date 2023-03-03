@@ -225,7 +225,7 @@ public class DbFilmStorage implements FilmStorage {
                 .build());
         film.setUsersLiked(new HashSet<>(filmLikesDao.getLikesOfFilm(film.getId())));
         log.info("The following film was successfully updated: {}", film);
-        return film;
+        return getFilm(film.getId());
     }
 
     @Override
