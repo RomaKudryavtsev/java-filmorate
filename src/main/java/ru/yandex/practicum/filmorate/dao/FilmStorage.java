@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.dao;
 import ru.yandex.practicum.filmorate.exceptions.FilmAlreadyExistsException;
 import ru.yandex.practicum.filmorate.exceptions.FilmDoesNotExistException;
 import ru.yandex.practicum.filmorate.exceptions.FilmToBeUpdatedDoesNotExistException;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Rating;
@@ -52,6 +53,20 @@ public interface FilmStorage {
     List<Rating> getAllRatings();
 
     Rating getRatingById(int ratingId);
+
+    List<Director> getAllDirectors();
+
+    Director getDirectorById(Integer directorId);
+
+    Director addDirector(Director director);
+
+    void deleteDirector(Integer directorId);
+
+    Director updateDirector(Director director);
+
+    List<Film> getFilmsForDirectorSortByYear(Integer directorId);
+
+    List<Film> getFilmsForDirectorSortByLikes(Integer directorId);
 
     List<Film> getCommonFilms(int userID, int friendID);
 }

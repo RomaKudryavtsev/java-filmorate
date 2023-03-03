@@ -25,6 +25,7 @@ public class Film {
     LocalDate releaseDate;
     int duration;
     Rating mpa;
+    Set<Director> directors;
     LinkedHashSet<Genre> genres;
 
     public int getAmountOfLikes() {

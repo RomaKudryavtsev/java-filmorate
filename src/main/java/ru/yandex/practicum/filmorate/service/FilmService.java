@@ -3,6 +3,11 @@ package ru.yandex.practicum.filmorate.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import ru.yandex.practicum.filmorate.exceptions.FilmAlreadyExistsException;
+import ru.yandex.practicum.filmorate.exceptions.FilmDoesNotExistException;
+import ru.yandex.practicum.filmorate.exceptions.FilmToBeUpdatedDoesNotExistException;
+import ru.yandex.practicum.filmorate.exceptions.ValidationException;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.exceptions.*;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
@@ -110,8 +115,7 @@ public class FilmService {
                 .collect(Collectors.toSet()).contains(film.getId())) {
             throw new FilmToBeUpdatedDoesNotExistException("Film to be updated does not exist");
         }
-        filmStorage.updateFilm(film);
-        return film;
+        return filmStorage.updateFilm(film);
     }
 
     public List<Genre> getAllGenres() {
@@ -128,6 +132,40 @@ public class FilmService {
 
     public Rating getRatingById(int ratingId) {
         return filmStorage.getRatingById(ratingId);
+    }
+
+    public List<Director> getAllDirectors() {
+        return filmStorage.getAllDirectors();
+    }
+
+    public Director getDirectorById(Integer directorId) {
+        return filmStorage.getDirectorById(directorId);
+    }
+
+    public Director addDirector(Director director) {
+        if (!director.getName().isBlank()) {
+            return filmStorage.addDirector(director);
+        } else {
+            throw new ValidationException("Invalid Director name");
+        }
+    }
+
+    public void deleteDirector(Integer directorId) {
+        filmStorage.deleteDirector(directorId);
+    }
+
+    public Director updateDirector(Director director) {
+        return filmStorage.updateDirector(director);
+    }
+
+    public List<Film> getFilmsForDirector(String sortBy, Integer directorId) {
+        if (sortBy.equals("year")) {
+            return filmStorage.getFilmsForDirectorSortByYear(directorId);
+        }
+        if (sortBy.equals("likes")) {
+            return filmStorage.getFilmsForDirectorSortByLikes(directorId);//filmStorage.getFilmsForDirectorSortByLikes(directorId);
+        }
+        throw new ValidationException("sad");
     }
 
     //Roma: new methods for ReviewController
