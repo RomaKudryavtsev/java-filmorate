@@ -7,6 +7,7 @@ import ru.yandex.practicum.filmorate.exceptions.UserAlreadyExistsException;
 import ru.yandex.practicum.filmorate.exceptions.UserDoesNotExistException;
 import ru.yandex.practicum.filmorate.exceptions.UserToBeUpdatedDoesNotExistException;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
+import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.dao.UserStorage;
 
@@ -44,6 +45,11 @@ public class UserService {
             throw new UserDoesNotExistException("User or its friend does not exist");
         }
         return true;
+    }
+
+    public List<Event> getFeed(int userId) {
+        checkIfUserExists(userId);
+        return userStorage.getFeed(userId);
     }
 
     public void addToFriends(int userId, int friendId) {

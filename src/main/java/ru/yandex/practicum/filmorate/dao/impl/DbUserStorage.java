@@ -7,12 +7,14 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.dao.FeedDao;
 import ru.yandex.practicum.filmorate.dao.FilmLikesDao;
 import ru.yandex.practicum.filmorate.dao.ReviewDao;
 import ru.yandex.practicum.filmorate.dao.UserStorage;
 import ru.yandex.practicum.filmorate.exceptions.UserAlreadyExistsException;
 import ru.yandex.practicum.filmorate.exceptions.UserDoesNotExistException;
 import ru.yandex.practicum.filmorate.exceptions.UserToBeUpdatedDoesNotExistException;
+import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.model.Friendship;
 import ru.yandex.practicum.filmorate.model.User;
 
@@ -33,6 +35,7 @@ public class DbUserStorage implements UserStorage {
     private final JdbcTemplate jdbcTemplate;
     private final FilmLikesDao filmLikesDao;
     private final ReviewDao reviewDao;
+    private final FeedDao feedDao;
 
     private final static String SELECT_ALL_INFO_ON_ALL_USERS_SQL = "select * from users";
     private final static String SELECT_ALL_INFO_ON_USER_SQL = "select * from users where user_id = ?";
@@ -78,10 +81,11 @@ public class DbUserStorage implements UserStorage {
     private final static String DELETE_USER_SQL = "delete from users where user_id = ?";
 
     @Autowired
-    public DbUserStorage(JdbcTemplate jdbcTemplate, FilmLikesDao filmLikesDao, ReviewDao reviewDao) {
+    public DbUserStorage(JdbcTemplate jdbcTemplate, FilmLikesDao filmLikesDao, ReviewDao reviewDao, FeedDao feedDao) {
         this.filmLikesDao = filmLikesDao;
         this.jdbcTemplate = jdbcTemplate;
         this.reviewDao = reviewDao;
+        this.feedDao = feedDao;
     }
 
     @Override
@@ -125,12 +129,19 @@ public class DbUserStorage implements UserStorage {
                 .stream().findFirst().orElseThrow(() -> {throw new UserDoesNotExistException();});
     }
 
+    @Override
+    public List<Event> getFeed(int userId) {
+        return feedDao.getFeed(userId);
+    }
+
     //NOTE: Upon deletion of user, his friendships, likes and reviews have to be deleted.
+    //NOTE: Feed of this user also has to be deleted
     @Override
     public void deleteUser(int userId) {
         jdbcTemplate.update(DELETE_ALL_USER_FRIENDSHIPS_SQL, userId, userId);
         filmLikesDao.deleteAllLikesOfUser(userId);
         reviewDao.deleteReviewsForUser(userId);
+        feedDao.deleteFeed(userId);
         jdbcTemplate.update(DELETE_USER_SQL, userId);
     }
 
@@ -147,11 +158,23 @@ public class DbUserStorage implements UserStorage {
             jdbcTemplate.update(UPDATE_FRIENDSHIP_SQL, true, friendId, userId);
             log.info("Now users {} and {} are confirmed friends", userId, friendId);
         }
+        feedDao.addEvent(Event.builder()
+                .operation("ADD")
+                .eventType("FRIEND")
+                .userId(userId)
+                .entityId(friendId)
+                .build());
     }
 
     @Override
     public void deleteFromFriends(int userId, int friendId) {
         jdbcTemplate.update(DELETE_FRIENDSHIP_SQL, userId, friendId);
+        feedDao.addEvent(Event.builder()
+                .operation("REMOVE")
+                .eventType("FRIEND")
+                .userId(userId)
+                .entityId(friendId)
+                .build());
     }
 
     @Override
