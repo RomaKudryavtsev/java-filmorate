@@ -130,7 +130,6 @@ public class FilmController {
     }
 
     @GetMapping("/films/director/{directorId}")
-    @ResponseBody
     public List<Film> getFilmsForDirector (@RequestParam(name = "sortBy") String sortBy, @PathVariable Integer directorId) {
         return filmService.getFilmsForDirector(sortBy,directorId);
     }

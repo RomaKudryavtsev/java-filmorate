@@ -6,19 +6,12 @@ import ru.yandex.practicum.filmorate.dao.FilmStorage;
 import ru.yandex.practicum.filmorate.exceptions.FilmAlreadyExistsException;
 import ru.yandex.practicum.filmorate.exceptions.FilmDoesNotExistException;
 import ru.yandex.practicum.filmorate.exceptions.FilmToBeUpdatedDoesNotExistException;
+import ru.yandex.practicum.filmorate.exceptions.ReviewDoesNotExistException;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.Director;
-
-import ru.yandex.practicum.filmorate.exceptions.FilmAlreadyExistsException;
-import ru.yandex.practicum.filmorate.exceptions.FilmDoesNotExistException;
-import ru.yandex.practicum.filmorate.exceptions.FilmToBeUpdatedDoesNotExistException;
-import ru.yandex.practicum.filmorate.exceptions.ValidationException;
-import ru.yandex.practicum.filmorate.model.Director;
-import ru.yandex.practicum.filmorate.exceptions.*;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Rating;
-import ru.yandex.practicum.filmorate.dao.FilmStorage;
 import ru.yandex.practicum.filmorate.model.Review;
 
 import java.time.LocalDate;
@@ -58,7 +51,7 @@ public class FilmService {
     }
 
     private boolean checkIfFilmExists(Integer filmId) {
-        if(filmId != null) {
+        if (filmId != null) {
             Set<Integer> allCurrentFilmIds = filmStorage.getAllFilms().stream().map(Film::getId)
                     .collect(Collectors.toSet());
             if (!allCurrentFilmIds.contains(filmId)) {
@@ -182,7 +175,7 @@ public class FilmService {
     }
 
     public Collection<Film> searchFilms(String query, List<String> categories) {
-        List<Film> films = getAllFilms();
+        List<Film> films = getMostLikedFilms(-1);
         Set<Film> foundFilms = new LinkedHashSet<>();
         for (Film film : films) {
             if (categories.contains(SEARCH_CATEGORY_TITLE) &&
@@ -208,7 +201,7 @@ public class FilmService {
     }
 
     public Review editReview(Review review) {
-        if(checkIfReviewExists(review.getReviewId())) {
+        if (checkIfReviewExists(review.getReviewId())) {
             checkIfFilmExists(review.getFilmId());
             userService.checkIfUserExists(review.getUserId());
             return filmStorage.editReview(review);
@@ -227,7 +220,7 @@ public class FilmService {
     }
 
     public void deleteReviewById(Integer reviewId) {
-        if(checkIfReviewExists(reviewId)) {
+        if (checkIfReviewExists(reviewId)) {
             filmStorage.deleteReviewById(reviewId);
         } else {
             throw new ReviewDoesNotExistException("Review does not exist");
@@ -235,7 +228,7 @@ public class FilmService {
     }
 
     public void addLikeToReview(Integer reviewId, Integer userId) {
-        if(checkIfReviewExists(reviewId)) {
+        if (checkIfReviewExists(reviewId)) {
             userService.checkIfUserExists(userId);
             filmStorage.addLikeToReview(reviewId, userId);
         } else {
@@ -244,7 +237,7 @@ public class FilmService {
     }
 
     public void addDislikeToReview(Integer reviewId, Integer userId) {
-        if(checkIfReviewExists(reviewId)) {
+        if (checkIfReviewExists(reviewId)) {
             userService.checkIfUserExists(userId);
             filmStorage.addDislikeToReview(reviewId, userId);
         } else {
@@ -253,7 +246,7 @@ public class FilmService {
     }
 
     public void removeLikeToReview(Integer reviewId, Integer userId) {
-        if(checkIfReviewExists(reviewId)) {
+        if (checkIfReviewExists(reviewId)) {
             userService.checkIfUserExists(userId);
             filmStorage.removeLikeToReview(reviewId, userId);
         } else {
@@ -262,7 +255,7 @@ public class FilmService {
     }
 
     public void removeDislikeToReview(Integer reviewId, Integer userId) {
-        if(checkIfReviewExists(reviewId)) {
+        if (checkIfReviewExists(reviewId)) {
             userService.checkIfUserExists(userId);
             filmStorage.removeDislikeToReview(reviewId, userId);
         } else {

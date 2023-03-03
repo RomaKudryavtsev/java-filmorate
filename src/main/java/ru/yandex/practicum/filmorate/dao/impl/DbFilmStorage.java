@@ -59,6 +59,19 @@ public class DbFilmStorage implements FilmStorage {
             "order by count(distinct fl.user_id) DESC " +
             "limit ?";
 
+    private final static String SELECT_ALL_FILMS_LIKE_ORDER_SQL = "select f.film_id, " +
+            "f.name, " +
+            "f.description, " +
+            "f.release_date, " +
+            "f.duration, " +
+            "r.rating_id as rating_id, " +
+            "r.name as rating_name " +
+            "from film f " +
+            "inner join rating r using(rating_id) " +
+            "left join film_likes fl using(film_id) " +
+            "group by f.film_id " +
+            "order by count(distinct fl.user_id) DESC";
+
     private final static String SELECT_COMMON_FILMS_SQL = "select f.film_id, " +
             "f.name, " +
             "f.description, " +
@@ -139,6 +152,9 @@ public class DbFilmStorage implements FilmStorage {
 
     @Override
     public List<Film> getMostLikedFilms(int count) {
+        if (count < 0) {
+            return jdbcTemplate.query(SELECT_ALL_FILMS_LIKE_ORDER_SQL, (rs, rowNum) -> makeFilm(rs));
+        }
         return jdbcTemplate.query(SELECT_MOST_LIKED_SQL, (rs, rowNum) -> makeFilm(rs), count);
     }
 

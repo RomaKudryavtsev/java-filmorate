@@ -28,7 +28,6 @@ public class Film {
     Rating mpa;
     Set<Director> directors;
     LinkedHashSet<Genre> genres;
-    List<Director> directors;
 
     public int getAmountOfLikes() {
         return usersLiked.size();
