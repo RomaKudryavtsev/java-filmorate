@@ -180,6 +180,7 @@ class FilmorateDbApplicationTests {
                 .mpa(Rating.builder().id(2).build())
                 .genres(genres)
                 .build());
+        
         Assertions.assertEquals(2, filmService.getFilmById(film.getId()).getMpa().getId());
     }
 
@@ -246,6 +247,7 @@ class FilmorateDbApplicationTests {
                 .email("arnie@gmail.com")
                 .birthday(LocalDate.of(1947, 7, 30))
                 .build());
+
         Assertions.assertEquals(4, userService.getAllUsers().size());
     }
 
