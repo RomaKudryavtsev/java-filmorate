@@ -9,11 +9,7 @@ import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.dao.*;
 import ru.yandex.practicum.filmorate.exceptions.*;
-import ru.yandex.practicum.filmorate.model.Director;
-import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.model.Rating;
-import ru.yandex.practicum.filmorate.model.Review;
+import ru.yandex.practicum.filmorate.model.*;
 
 import java.sql.Date;
 import java.sql.PreparedStatement;
@@ -35,6 +31,8 @@ public class DbFilmStorage implements FilmStorage {
     private final DirectorDao directorDao;
     private final DirectorFilmDao directorFilmDao;
     private final ReviewDao reviewDao;
+    private final FeedDao feedDao;
+
     private final static String SELECT_ALL_INFO_ON_ALL_FILMS_SQL = "select f.film_id," +
             "f.name," +
             "f.description," +
@@ -134,7 +132,8 @@ public class DbFilmStorage implements FilmStorage {
 
     @Autowired
     public DbFilmStorage(JdbcTemplate jdbcTemplate, RatingDao ratingDao, GenreDao genreDao, GenreFilmDao genreFilmDao,
-                         FilmLikesDao filmLikesDao, DirectorDao directorDao, DirectorFilmDao directorFilmDao, ReviewDao reviewDao) {
+                         FilmLikesDao filmLikesDao, DirectorDao directorDao, DirectorFilmDao directorFilmDao,
+                         ReviewDao reviewDao, FeedDao feedDao) {
         this.ratingDao = ratingDao;
         this.genreDao = genreDao;
         this.genreFilmDao = genreFilmDao;
@@ -143,6 +142,7 @@ public class DbFilmStorage implements FilmStorage {
         this.jdbcTemplate = jdbcTemplate;
         this.reviewDao = reviewDao;
         this.directorFilmDao = directorFilmDao;
+        this.feedDao = feedDao;
     }
 
     @Override
@@ -262,22 +262,48 @@ public class DbFilmStorage implements FilmStorage {
 
     @Override
     public void addLike(int filmId, int userId) {
+        feedDao.addEvent(Event.builder()
+                .operation("ADD")
+                .eventType("LIKE")
+                .userId(userId)
+                .entityId(filmId)
+                .build());
         filmLikesDao.addLike(filmId, userId);
     }
 
     @Override
     public void removeLike(int filmId, int userId) {
+        feedDao.addEvent(Event.builder()
+                .operation("REMOVE")
+                .eventType("LIKE")
+                .userId(userId)
+                .entityId(filmId)
+                .build());
         filmLikesDao.removeLike(filmId, userId);
     }
 
     @Override
     public Review addReview(Review review) {
-        return reviewDao.addReview(review);
+        Review reviewAdded = reviewDao.addReview(review);
+        feedDao.addEvent(Event.builder()
+                .operation("ADD")
+                .eventType("REVIEW")
+                .userId(reviewAdded.getUserId())
+                .entityId(reviewAdded.getReviewId())
+                .build());
+        return reviewAdded;
     }
 
     @Override
     public Review editReview(Review review) {
-        return reviewDao.editReview(review);
+        Review reviewEdited = reviewDao.editReview(review);
+        feedDao.addEvent(Event.builder()
+                .operation("UPDATE")
+                .eventType("REVIEW")
+                .userId(reviewEdited.getUserId())
+                .entityId(reviewEdited.getReviewId())
+                .build());
+        return reviewEdited;
     }
 
     @Override
@@ -307,6 +333,12 @@ public class DbFilmStorage implements FilmStorage {
 
     @Override
     public void deleteReviewById(Integer reviewId) {
+        feedDao.addEvent(Event.builder()
+                .operation("REMOVE")
+                .eventType("REVIEW")
+                .userId(getReviewById(reviewId).getUserId())
+                .entityId(reviewId)
+                .build());
         reviewDao.deleteReviewById(reviewId);
     }
 
