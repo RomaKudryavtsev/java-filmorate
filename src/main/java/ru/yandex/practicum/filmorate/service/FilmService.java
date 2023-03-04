@@ -83,8 +83,8 @@ public class FilmService {
         filmStorage.removeLike(filmId, userId);
     }
 
-    public List<Film> getMostLikedFilms(int count) {
-        return filmStorage.getMostLikedFilms(count);
+    public List<Film> getMostLikedFilms(int count, int genreId, String year) {
+        return filmStorage.getMostLikedFilms(count, genreId, year);
     }
 
     public List<Film> getAllFilms() {
@@ -175,7 +175,7 @@ public class FilmService {
     }
 
     public Collection<Film> searchFilms(String query, List<String> categories) {
-        List<Film> films = getMostLikedFilms(-1);
+        List<Film> films = getMostLikedFilms(-1, 0, null);
         Set<Film> foundFilms = new LinkedHashSet<>();
         for (Film film : films) {
             if (categories.contains(SEARCH_CATEGORY_TITLE) &&
