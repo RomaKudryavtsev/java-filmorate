@@ -57,6 +57,55 @@ public class DbFilmStorage implements FilmStorage {
             "order by count(distinct fl.user_id) DESC " +
             "limit ?";
 
+    private final static String SELECT_MOST_FILMS_BY_YEAR = "select f.FILM_ID as film_id, " +
+            "f.NAME as name, " +
+            "f.DESCRIPTION as description, " +
+            "f.RELEASE_DATE as release_date, " +
+            "f.DURATION as duration, " +
+            "f.RATING_ID as rating_id, " +
+            "r.NAME as rating_name, " +
+            "from FILM as f " +
+            "left join FILM_LIKES as l on f.FILM_ID = l.FILM_ID " +
+            "left join RATING as r on r.RATING_ID = f.RATING_ID " +
+            "where extract(year from f.RELEASE_DATE) = ? " +
+            "group by f.FILM_ID " +
+            "order by COUNT(l.USER_ID) desc " +
+            "limit ?";
+
+    private final static String SELECT_MOST_FILMS_BY_GENRE = "select f.FILM_ID as film_id, " +
+            "g.GENRE_ID as genre, " +
+            "f.NAME as name, " +
+            "f.DESCRIPTION as description, " +
+            "f.RELEASE_DATE as release_date, " +
+            " f.DURATION as duration, " +
+            "f.RATING_ID as rating_id, " +
+            "r.NAME as rating_name " +
+            "from FILM as f " +
+            "left join FILM_LIKES as l on f.FILM_ID = l.FILM_ID " +
+            "left join GENRE_FILM as g on g.FILM_ID = f.FILM_ID " +
+            "left join RATING as r on r.RATING_ID = f.RATING_ID " +
+            "where g.GENRE_ID = ? " +
+            "group by f.FILM_ID " +
+            "order by COUNT(l.USER_ID) desc " +
+            "limit ?";
+
+    private final static String SELECT_MOST_FILMS_BY_GENRE_AND_YEAR = " select f.FILM_ID as film_id, " +
+            "g.GENRE_ID as genre, " +
+            "f.NAME as name, " +
+            "f.DESCRIPTION as description, " +
+            "f.RELEASE_DATE as release_date, " +
+            "f.DURATION as duration, " +
+            "f.RATING_ID as rating_id, " +
+            "r.NAME as rating_name " +
+            "from FILM as f " +
+            "left join FILM_LIKES as l on f.FILM_ID = l.FILM_ID " +
+            "left join GENRE_FILM as g on g.FILM_ID = f.FILM_ID " +
+            "left join RATING as r on r.RATING_ID = f.RATING_ID " +
+            "where g.GENRE_ID = ? and extract(year from f.RELEASE_DATE) = ? " +
+            "group by f.FILM_ID " +
+            "order by COUNT(l.USER_ID) desc " +
+            "limit ?";
+
     private final static String SELECT_ALL_FILMS_LIKE_ORDER_SQL = "select f.film_id, " +
             "f.name, " +
             "f.description, " +
@@ -151,11 +200,19 @@ public class DbFilmStorage implements FilmStorage {
     }
 
     @Override
-    public List<Film> getMostLikedFilms(int count) {
+    public List<Film> getMostLikedFilms(int count, int genreId, String year) {
         if (count < 0) {
             return jdbcTemplate.query(SELECT_ALL_FILMS_LIKE_ORDER_SQL, (rs, rowNum) -> makeFilm(rs));
+        } else if ((genreId == 0) && (Objects.equals(year, "null"))) {
+            return jdbcTemplate.query(SELECT_MOST_LIKED_SQL, (rs, rowNum) -> makeFilm(rs), count);
+        } else if (genreId == 0) {
+            return jdbcTemplate.query(SELECT_MOST_FILMS_BY_YEAR, (rs, rowNum) -> makeFilm(rs), year, count);
+        } else if (Objects.equals(year, "null")) {
+            return jdbcTemplate.query(SELECT_MOST_FILMS_BY_GENRE, (rs, rowNum) -> makeFilm(rs), genreId, count);
+        } else {
+            return jdbcTemplate.query(SELECT_MOST_FILMS_BY_GENRE_AND_YEAR,
+                    (rs, rowNum) -> makeFilm(rs), genreId, year, count);
         }
-        return jdbcTemplate.query(SELECT_MOST_LIKED_SQL, (rs, rowNum) -> makeFilm(rs), count);
     }
 
     @Override
@@ -171,7 +228,7 @@ public class DbFilmStorage implements FilmStorage {
             return stmt;
         }, filmKeyHolder);
         int filmId = Objects.requireNonNull(filmKeyHolder.getKey()).intValue();
-        if(film.getGenres() != null) {
+        if (film.getGenres() != null) {
             film.getGenres().forEach(genre -> genreFilmDao.addNewGenreFilm(filmId, handleFilmGenre(genre)));
         }
         if (film.getDirectors() != null) {
@@ -194,7 +251,7 @@ public class DbFilmStorage implements FilmStorage {
                 , film.getDuration()
                 , handleFilmRating(film.getMpa())
                 , film.getId());
-        if(film.getGenres() != null) {
+        if (film.getGenres() != null) {
             //NOTE: First, we will add new links corresponding to the given film genre.
             List<Genre> dbGenresOfFilm = genreFilmDao.getGenresForFilm(film.getId());
             film.getGenres().stream()
@@ -223,13 +280,13 @@ public class DbFilmStorage implements FilmStorage {
                                 .contains(director.getId());
                     })
                     .forEach((director -> {
-                        directorFilmDao.addNewFilmDirector(film.getId(),handleFilmDirector(director));
+                        directorFilmDao.addNewFilmDirector(film.getId(), handleFilmDirector(director));
                     }));
             dbDirectorsOfFilm.stream().filter(director -> !film.getDirectors().stream()
-                    .map(Director::getId)
-                    .collect(Collectors.toSet())
-                    .contains(director.getId()))
-                    .forEach((director) -> directorFilmDao.deleteDirectorFilm(film.getId(),director.getId()));
+                            .map(Director::getId)
+                            .collect(Collectors.toSet())
+                            .contains(director.getId()))
+                    .forEach((director) -> directorFilmDao.deleteDirectorFilm(film.getId(), director.getId()));
         } else {
             directorFilmDao.deleteAllDirectorsForFilm(film.getId());
         }
@@ -344,7 +401,7 @@ public class DbFilmStorage implements FilmStorage {
 
     @Override
     public List<Review> getReviewsForFilm(Integer filmId, Integer count) {
-        if(filmId != null) {
+        if (filmId != null) {
             return reviewDao.getReviewsForFilm(filmId, count);
         } else {
             return reviewDao.getAllReviews(count);
@@ -462,7 +519,7 @@ public class DbFilmStorage implements FilmStorage {
 
     @Override
     public List<Film> getFilmsForDirectorSortByYear(Integer directorId) {
-        List<Film> list = jdbcTemplate.query(SELECT_FILMS_FOR_DIRECTOR_SORT_BY_YEAR,(rs,rowNum) -> makeFilm(rs),directorId);
+        List<Film> list = jdbcTemplate.query(SELECT_FILMS_FOR_DIRECTOR_SORT_BY_YEAR, (rs, rowNum) -> makeFilm(rs), directorId);
         if (list.isEmpty()) {
             throw new FilmDoesNotExistException("Нет фильмов для режиссера");
         } else
@@ -471,15 +528,15 @@ public class DbFilmStorage implements FilmStorage {
 
     @Override
     public List<Film> getFilmsForDirectorSortByLikes(Integer directorId) {
-        List<Film> list = jdbcTemplate.query(SELECT_FILMS_FOR_DIRECTOR_SORT_BY_LIKES, (rs, rowNum) -> makeFilm(rs),directorId);
+        List<Film> list = jdbcTemplate.query(SELECT_FILMS_FOR_DIRECTOR_SORT_BY_LIKES, (rs, rowNum) -> makeFilm(rs), directorId);
         if (list.isEmpty()) {
             throw new FilmDoesNotExistException("Нет фильмов для режиссера");
         } else
-        return list;
+            return list;
     }
 
     @Override
     public List<Film> getCommonFilms(int userID, int friendID) {
-       return jdbcTemplate.query(SELECT_COMMON_FILMS_SQL, (rs, rowNum) -> makeFilm(rs), userID, friendID);
+        return jdbcTemplate.query(SELECT_COMMON_FILMS_SQL, (rs, rowNum) -> makeFilm(rs), userID, friendID);
     }
 }

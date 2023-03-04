@@ -22,7 +22,7 @@ public interface FilmStorage {
 
     void deleteFilm(int filmId) throws FilmDoesNotExistException;
 
-    List<Film> getMostLikedFilms(int count);
+    List<Film> getMostLikedFilms(int count, int genreId, String year);
 
     void addLike(int filmId, int userId);
 
