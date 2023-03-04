@@ -137,7 +137,7 @@ class FilmorateDbApplicationTests {
 
     @Test
     void testGetMostLikedFilms() {
-        Assertions.assertEquals(4, filmService.getMostLikedFilms(10).size());
+        Assertions.assertEquals(4, filmService.getMostLikedFilms(10, 0, null).size());
     }
 
     @Test
