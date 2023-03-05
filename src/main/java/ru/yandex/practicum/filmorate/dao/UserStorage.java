@@ -2,7 +2,6 @@ package ru.yandex.practicum.filmorate.dao;
 
 import ru.yandex.practicum.filmorate.exceptions.UserAlreadyExistsException;
 import ru.yandex.practicum.filmorate.exceptions.UserToBeUpdatedDoesNotExistException;
-import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.model.User;
 
@@ -29,5 +28,5 @@ public interface UserStorage {
 
     List<User> getListOfCommonFriends(int userId1, int userId2);
 
-    List<Film> getRecommendations(Integer userID);
+    List<Integer> getRecommendations(Integer userID);
 }

@@ -35,7 +35,6 @@ public class DbUserStorage implements UserStorage {
     private final JdbcTemplate jdbcTemplate;
     private final FilmLikesDao filmLikesDao;
     private final ReviewDao reviewDao;
-    private final DbFilmStorage filmStorage;
     private final FeedDao feedDao;
 
     private final static String SELECT_ALL_INFO_ON_ALL_USERS_SQL = "select * from users";
@@ -120,12 +119,11 @@ public class DbUserStorage implements UserStorage {
 
     @Autowired
     public DbUserStorage(JdbcTemplate jdbcTemplate, FilmLikesDao filmLikesDao,
-                ReviewDao reviewDao, DbFilmStorage filmStorage, FeedDao feedDao) {
+                         ReviewDao reviewDao, FeedDao feedDao) {
         this.filmLikesDao = filmLikesDao;
         this.jdbcTemplate = jdbcTemplate;
         this.reviewDao = reviewDao;
         this.feedDao = feedDao;
-        this.filmStorage = filmStorage;
     }
 
     @Override
@@ -270,7 +268,7 @@ public class DbUserStorage implements UserStorage {
     }
 
     @Override
-    public List<Film> getRecommendations(Integer userID) {
+    public List<Integer> getRecommendations(Integer userID) {
         List<Integer> userIDsMaxCommon = getUserIDsVsMaxCommonLikes(userID);
 
         if (userIDsMaxCommon.isEmpty()) {
@@ -288,7 +286,7 @@ public class DbUserStorage implements UserStorage {
                 .sorted(Comparator.comparing(filmsScores::get).reversed())
                 .collect(Collectors.toList());
 
-        return filmStorage.getFilmsByIDs(recommendedFilmIds);
+        return recommendedFilmIds;
     }
 
     private List<Integer> getUserIDsVsMaxCommonLikes(Integer userID) {
