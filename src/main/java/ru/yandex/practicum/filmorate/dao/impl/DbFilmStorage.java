@@ -69,7 +69,7 @@ public class DbFilmStorage implements FilmStorage {
             "order by count(distinct fl.user_id) DESC " +
             "limit ?";
 
-    private final static String SELECT_MOST_FILMS_BY_YEAR = "select f.FILM_ID as film_id, " +
+    private final static String SELECT_MOST_LIKED_FILMS_BY_YEAR = "select f.FILM_ID as film_id, " +
             "f.NAME as name, " +
             "f.DESCRIPTION as description, " +
             "f.RELEASE_DATE as release_date, " +
@@ -84,7 +84,7 @@ public class DbFilmStorage implements FilmStorage {
             "order by COUNT(l.USER_ID) desc " +
             "limit ?";
 
-    private final static String SELECT_MOST_FILMS_BY_GENRE = "select f.FILM_ID as film_id, " +
+    private final static String SELECT_MOST_LIKED_FILMS_BY_GENRE = "select f.FILM_ID as film_id, " +
             "g.GENRE_ID as genre, " +
             "f.NAME as name, " +
             "f.DESCRIPTION as description, " +
@@ -101,7 +101,7 @@ public class DbFilmStorage implements FilmStorage {
             "order by COUNT(l.USER_ID) desc " +
             "limit ?";
 
-    private final static String SELECT_MOST_FILMS_BY_GENRE_AND_YEAR = " select f.FILM_ID as film_id, " +
+    private final static String SELECT_MOST_LIKED_FILMS_BY_GENRE_AND_YEAR = " select f.FILM_ID as film_id, " +
             "g.GENRE_ID as genre, " +
             "f.NAME as name, " +
             "f.DESCRIPTION as description, " +
@@ -230,16 +230,21 @@ public class DbFilmStorage implements FilmStorage {
     }
 
     @Override
-    public List<Film> getMostLikedFilms(int count, int genreId, String year) {
+    public List<Film> getMostLikedFilms(int count, int genreId, int year) {
         if (count < 0) {
             return jdbcTemplate.query(SELECT_ALL_FILMS_LIKE_ORDER_SQL, (rs, rowNum) -> makeFilm(rs));
-        } else if ((genreId != 0) && (!Objects.equals(year, "null"))) {
-            return jdbcTemplate.query(SELECT_MOST_FILMS_BY_GENRE_AND_YEAR,
-                    (rs, rowNum) -> makeFilm(rs), genreId, year, count);
-        } else if ((genreId == 0) && (!Objects.equals(year, "null"))) {
-            return jdbcTemplate.query(SELECT_MOST_FILMS_BY_YEAR, (rs, rowNum) -> makeFilm(rs), year, count);
-        } else if ((genreId != 0) && (Objects.equals(year, "null"))) {
-            return jdbcTemplate.query(SELECT_MOST_FILMS_BY_GENRE, (rs, rowNum) -> makeFilm(rs), genreId, count);
+        }
+        if ((genreId > 0) && (year > 0)) {
+            String yearStr = String.valueOf(year);
+            return jdbcTemplate.query(SELECT_MOST_LIKED_FILMS_BY_GENRE_AND_YEAR,
+                    (rs, rowNum) -> makeFilm(rs), genreId, yearStr, count);
+        }
+        if ((genreId < 0) && (year > 0)) {
+            String yearStr = String.valueOf(year);
+            return jdbcTemplate.query(SELECT_MOST_LIKED_FILMS_BY_YEAR, (rs, rowNum) -> makeFilm(rs), yearStr, count);
+        }
+        if ((genreId > 0) && (year < 0)) {
+            return jdbcTemplate.query(SELECT_MOST_LIKED_FILMS_BY_GENRE, (rs, rowNum) -> makeFilm(rs), genreId, count);
         } else {
             return jdbcTemplate.query(SELECT_MOST_LIKED_SQL, (rs, rowNum) -> makeFilm(rs), count);
         }

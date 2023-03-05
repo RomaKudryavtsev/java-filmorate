@@ -42,6 +42,7 @@ class FilmorateApplicationTests {
         mockMvc.perform(post("/users").contentType("application/json").content(newUserString))
                 .andDo(h -> System.out.println(h.getResponse().getContentAsString()))
                 .andExpect(status().is2xxSuccessful());
+        
     }
 
     @SneakyThrows
