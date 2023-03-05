@@ -298,7 +298,9 @@ public class DbFilmStorage implements FilmStorage {
                 .userId(userId)
                 .entityId(filmId)
                 .build());
-        filmLikesDao.addLike(filmId, userId);
+        if(!filmLikesDao.getLikesOfFilm(filmId).contains(userId)) {
+            filmLikesDao.addLike(filmId, userId);
+        }
     }
 
     @Override
