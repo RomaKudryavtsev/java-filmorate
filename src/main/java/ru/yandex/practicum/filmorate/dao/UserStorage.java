@@ -28,4 +28,5 @@ public interface UserStorage {
 
     List<User> getListOfCommonFriends(int userId1, int userId2);
 
+    List<Integer> getRecommendations(Integer userID);
 }
