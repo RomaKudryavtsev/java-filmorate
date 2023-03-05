@@ -142,8 +142,8 @@ class FilmorateApplicationTests {
                         "directed by Jonathan Mostow. Starring Arnold Schwarzenegger, Nick Stahl, " +
                         "Claire Danes, and Kristanna Loken, it is the third installment in the Terminator" +
                         "franchise and a sequel to Terminator 2: Judgment Day (1991). In its plot," +
-                        "the malevolent artificial intelligence Skynet sends a T-X (Loken)—a highly " +
-                        "advanced Terminator—back in time to ensure the rise of machines by killing " +
+                        "the malevolent artificial intelligence Skynet sends a T-X (Loken)â€”a highly " +
+                        "advanced Terminatorâ€”back in time to ensure the rise of machines by killing " +
                         "top members of the future human resistance as John Connor's (Stahl) location " +
                         "is unknown. The resistance sends back a reprogrammed T-101 (Schwarzenegger) " +
                         "to protect John and Kate.")
