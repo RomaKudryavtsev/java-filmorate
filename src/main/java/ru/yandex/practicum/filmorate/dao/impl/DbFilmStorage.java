@@ -42,6 +42,18 @@ public class DbFilmStorage implements FilmStorage {
             "r.name AS rating_name " +
             "from film f " +
             "join rating r using(rating_id) ";
+
+    private final static String SELECT_FILMS_BY_IDS = "select f.film_id," +
+            "f.name," +
+            "f.description," +
+            "f.release_date," +
+            "f.duration," +
+            "r.rating_id AS rating_id," +
+            "r.name AS rating_name " +
+            "from film f " +
+            "join rating r using(rating_id) " +
+            "where film_id in " +
+            "(SELECT id FROM film_tmp)";
     private final static String SELECT_ALL_INFO_ON_FILM_SQL = SELECT_ALL_INFO_ON_ALL_FILMS_SQL + " where f.film_id = ?";
     private final static String SELECT_MOST_LIKED_SQL = "select f.film_id, " +
             "f.name, " +
@@ -199,6 +211,24 @@ public class DbFilmStorage implements FilmStorage {
         return jdbcTemplate.query(SELECT_ALL_INFO_ON_ALL_FILMS_SQL, (rs, rowNum) -> makeFilm(rs));
     }
 
+    public List<Film> getFilmsByIDs(List<Integer> filmIds) {
+
+        jdbcTemplate.execute("CREATE TEMPORARY TABLE IF NOT EXISTS film_tmp (id INT NOT NULL)");
+
+        List<Object[]> filmIdsTmp = new ArrayList<>();
+        for (Integer id : filmIds) {
+            filmIdsTmp.add(new Object[]{id});
+        }
+        jdbcTemplate.batchUpdate("INSERT INTO film_tmp VALUES(?)", filmIdsTmp);
+
+        List<Film> films = jdbcTemplate.query(SELECT_FILMS_BY_IDS,
+                (rs, rowNum) -> makeFilm(rs));
+
+        jdbcTemplate.update("DELETE FROM film_tmp");
+
+        return films;
+    }
+
     @Override
     public List<Film> getMostLikedFilms(int count, int genreId, String year) {
         if (count < 0) {
@@ -325,7 +355,9 @@ public class DbFilmStorage implements FilmStorage {
                 .userId(userId)
                 .entityId(filmId)
                 .build());
-        filmLikesDao.addLike(filmId, userId);
+        if(!filmLikesDao.getLikesOfFilm(filmId).contains(userId)) {
+            filmLikesDao.addLike(filmId, userId);
+        }
     }
 
     @Override
