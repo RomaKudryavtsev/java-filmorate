@@ -7,6 +7,7 @@ import ru.yandex.practicum.filmorate.exceptions.UserAlreadyExistsException;
 import ru.yandex.practicum.filmorate.exceptions.UserDoesNotExistException;
 import ru.yandex.practicum.filmorate.exceptions.UserToBeUpdatedDoesNotExistException;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.dao.UserStorage;
 
@@ -106,5 +107,10 @@ public class UserService {
         }
         userStorage.updateUser(user);
         return user;
+    }
+
+    public List<Film> getRecommendations(Integer userID) {
+        checkIfUserExists(userID);
+        return userStorage.getRecommendations(userID);
     }
 }

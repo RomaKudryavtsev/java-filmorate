@@ -13,6 +13,7 @@ import ru.yandex.practicum.filmorate.dao.UserStorage;
 import ru.yandex.practicum.filmorate.exceptions.UserAlreadyExistsException;
 import ru.yandex.practicum.filmorate.exceptions.UserDoesNotExistException;
 import ru.yandex.practicum.filmorate.exceptions.UserToBeUpdatedDoesNotExistException;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Friendship;
 import ru.yandex.practicum.filmorate.model.User;
 
@@ -21,10 +22,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Component
 @Primary
@@ -33,6 +32,7 @@ public class DbUserStorage implements UserStorage {
     private final JdbcTemplate jdbcTemplate;
     private final FilmLikesDao filmLikesDao;
     private final ReviewDao reviewDao;
+    private final DbFilmStorage filmStorage;
 
     private final static String SELECT_ALL_INFO_ON_ALL_USERS_SQL = "select * from users";
     private final static String SELECT_ALL_INFO_ON_USER_SQL = "select * from users where user_id = ?";
@@ -77,11 +77,49 @@ public class DbUserStorage implements UserStorage {
             "or friend_user_id = ?";
     private final static String DELETE_USER_SQL = "delete from users where user_id = ?";
 
+    private final static String SELECT_USERS_WITH_COMMON_FILMS_QTY = "select USER_ID, count(FILM_ID) score " +
+            "from film_likes " +
+            "where USER_ID <> ? " +
+            "  and film_id in " +
+            "      (select FILM_ID " +
+            "       from FILM_LIKES " +
+            "       where USER_ID = ?) " +
+            "group by USER_ID " +
+            "order by score DESC ";
+
+    private final static String SELECT_USERS_LIKES_DIFF = "select USER_ID, FILM_ID " +
+            "from FILM_LIKES " +
+            "where USER_ID in " +
+            "      (select distinct USER_ID " +
+            "          from film_likes " +
+            "          where USER_ID <> ? " +
+            "            and film_id in " +
+            "                (select FILM_ID " +
+            "                 from FILM_LIKES " +
+            "                 where USER_ID = ?)) " +
+            "and FILM_ID not in (select FILM_ID " +
+            "                      from FILM_LIKES " +
+            "                      where USER_ID = ?)";
+
+    private final static String SELECT_FILMS_SCORE = "select FILM_ID, count(FILM_ID) score " +
+            "from FILM_LIKES " +
+            "where USER_ID in " +
+            "      (select distinct USER_ID " +
+            "       from FILM_LIKES " +
+            "       where USER_ID <> ? " +
+            "         and FILM_ID in " +
+            "             (select FILM_ID " +
+            "              from FILM_LIKES " +
+            "              where USER_ID = ?)) " +
+            "group by FILM_ID " +
+            "order by score desc";
+
     @Autowired
-    public DbUserStorage(JdbcTemplate jdbcTemplate, FilmLikesDao filmLikesDao, ReviewDao reviewDao) {
+    public DbUserStorage(JdbcTemplate jdbcTemplate, FilmLikesDao filmLikesDao, ReviewDao reviewDao, DbFilmStorage filmStorage) {
         this.filmLikesDao = filmLikesDao;
         this.jdbcTemplate = jdbcTemplate;
         this.reviewDao = reviewDao;
+        this.filmStorage = filmStorage;
     }
 
     @Override
@@ -122,7 +160,9 @@ public class DbUserStorage implements UserStorage {
     @Override
     public User getUser(int userId) {
         return jdbcTemplate.query(SELECT_ALL_INFO_ON_USER_SQL, (rs, rowNum) -> makeUser(rs), userId)
-                .stream().findFirst().orElseThrow(() -> {throw new UserDoesNotExistException();});
+                .stream().findFirst().orElseThrow(() -> {
+                    throw new UserDoesNotExistException();
+                });
     }
 
     //NOTE: Upon deletion of user, his friendships, likes and reviews have to be deleted.
@@ -139,7 +179,7 @@ public class DbUserStorage implements UserStorage {
         //NOTE: If user already has this friend - we have to confirm friendship.
         //Otherwise, new non-confirmed friendship will be created only for user with userId.
         List<Integer> friendsOfUserWithFriendId = getListOfFriendIdsForUser(friendId);
-        if(!friendsOfUserWithFriendId.contains(userId)) {
+        if (!friendsOfUserWithFriendId.contains(userId)) {
             jdbcTemplate.update(INSERT_NEW_FRIENDSHIP_SQL, userId, friendId, false);
             log.info("User {} send request for friendship to user {}. User {} is now non-confirmed friend of user {}.",
                     userId, friendId, friendId, userId);
@@ -200,7 +240,84 @@ public class DbUserStorage implements UserStorage {
                 .build();
     }
 
-    private Integer makeUserId (ResultSet rs) throws SQLException {
+    private Integer makeUserId(ResultSet rs) throws SQLException {
         return rs.getInt("user_id");
+    }
+
+    @Override
+    public List<Film> getRecommendations(Integer userID) {
+        List<Integer> userIDsMaxCommon = getUserIDsVsMaxCommonLikes(userID);
+
+        if (userIDsMaxCommon.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        Map<Integer, List<Integer>> usersFilmsDiff = getFilmsDiff(userID);
+
+        Map<Integer, Integer> filmsScores = getFilmsScores(userID);
+
+        List<Integer> recommendedFilmIds = usersFilmsDiff.entrySet().stream()
+                .filter(e -> userIDsMaxCommon.contains(e.getKey()))
+                .flatMap(e -> e.getValue().stream())
+                .distinct()
+                .sorted(Comparator.comparing(filmsScores::get).reversed())
+                .collect(Collectors.toList());
+
+        return filmStorage.getFilmsByIDs(recommendedFilmIds);
+    }
+
+    private List<Integer> getUserIDsVsMaxCommonLikes(Integer userID) {
+
+        final List<Integer> scores = new ArrayList<>();
+        final Map<Integer, Integer> userIdsScores = new HashMap<>();
+
+        jdbcTemplate.query(SELECT_USERS_WITH_COMMON_FILMS_QTY,
+                (ResultSet rs) -> {
+                    int score = rs.getInt("score");
+                    scores.add(score);
+                    userIdsScores.put(rs.getInt("user_id"), score);
+                }, userID, userID);
+
+        Optional<Integer> maxScore = scores.stream().max(Comparator.naturalOrder());
+
+        if (maxScore.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        return userIdsScores.entrySet().stream()
+                .filter(e -> e.getValue().equals(maxScore.get()))
+                .map(Map.Entry::getKey)
+                .collect(Collectors.toList());
+    }
+
+    private Map<Integer, List<Integer>> getFilmsDiff(int userID) {
+
+        final Map<Integer, List<Integer>> usersLikes = new HashMap<>();
+
+        jdbcTemplate.query(SELECT_USERS_LIKES_DIFF,
+                (ResultSet rs) -> {
+
+                    int userIdTemp = rs.getInt("user_id");
+                    int filmIdTemp = rs.getInt("film_id");
+                    usersLikes.computeIfAbsent(userIdTemp, k -> new ArrayList<>()).add(filmIdTemp);
+
+                }, userID, userID, userID);
+
+        return usersLikes;
+    }
+
+    private Map<Integer, Integer> getFilmsScores(int userID) {
+
+        final Map<Integer, Integer> filmsScores = new HashMap<>();
+
+        jdbcTemplate.query(SELECT_FILMS_SCORE,
+                (ResultSet rs) -> {
+
+                    int filmId = rs.getInt("film_id");
+                    int score = rs.getInt("score");
+                    filmsScores.put(filmId, score);
+
+                }, userID, userID);
+        return filmsScores;
     }
 }

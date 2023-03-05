@@ -41,6 +41,18 @@ public class DbFilmStorage implements FilmStorage {
             "r.name AS rating_name " +
             "from film f " +
             "join rating r using(rating_id) ";
+
+    private final static String SELECT_FILMS_BY_IDS = "select f.film_id," +
+            "f.name," +
+            "f.description," +
+            "f.release_date," +
+            "f.duration," +
+            "r.rating_id AS rating_id," +
+            "r.name AS rating_name " +
+            "from film f " +
+            "join rating r using(rating_id) " +
+            "where film_id in " +
+            "(SELECT id FROM film_tmp)";
     private final static String SELECT_ALL_INFO_ON_FILM_SQL = SELECT_ALL_INFO_ON_ALL_FILMS_SQL + " where f.film_id = ?";
     private final static String SELECT_MOST_LIKED_SQL = "select f.film_id, " +
             "f.name, " +
@@ -81,6 +93,24 @@ public class DbFilmStorage implements FilmStorage {
         return jdbcTemplate.query(SELECT_ALL_INFO_ON_ALL_FILMS_SQL, (rs, rowNum) -> makeFilm(rs));
     }
 
+    public List<Film> getFilmsByIDs(List<Integer> filmIds) {
+
+        jdbcTemplate.execute("CREATE TEMPORARY TABLE IF NOT EXISTS film_tmp (id INT NOT NULL)");
+
+        List<Object[]> filmIdsTmp = new ArrayList<>();
+        for (Integer id : filmIds) {
+            filmIdsTmp.add(new Object[]{id});
+        }
+        jdbcTemplate.batchUpdate("INSERT INTO film_tmp VALUES(?)", filmIdsTmp);
+
+        List<Film> films = jdbcTemplate.query(SELECT_FILMS_BY_IDS,
+                (rs, rowNum) -> makeFilm(rs));
+
+        jdbcTemplate.update("DELETE FROM film_tmp");
+
+        return films;
+    }
+
     @Override
     public List<Film> getMostLikedFilms(int count) {
         return jdbcTemplate.query(SELECT_MOST_LIKED_SQL, (rs, rowNum) -> makeFilm(rs), count);
@@ -99,7 +129,7 @@ public class DbFilmStorage implements FilmStorage {
             return stmt;
         }, filmKeyHolder);
         int filmId = Objects.requireNonNull(filmKeyHolder.getKey()).intValue();
-        if(film.getGenres() != null) {
+        if (film.getGenres() != null) {
             film.getGenres().stream().
                     forEach(genre -> genreFilmDao.addNewGenreFilm(filmId,
                             handleFilmGenre(genre)));
@@ -119,7 +149,7 @@ public class DbFilmStorage implements FilmStorage {
                 , film.getDuration()
                 , handleFilmRating(film.getMpa())
                 , film.getId());
-        if(film.getGenres() != null) {
+        if (film.getGenres() != null) {
             //NOTE: First, we will add new links corresponding to the given film genre.
             List<Genre> dbGenresOfFilm = genreFilmDao.getGenresForFilm(film.getId());
             film.getGenres().stream()
@@ -152,7 +182,9 @@ public class DbFilmStorage implements FilmStorage {
     @Override
     public Film getFilm(int filmId) {
         return jdbcTemplate.query(SELECT_ALL_INFO_ON_FILM_SQL, (rs, rowNum) -> makeFilm(rs), filmId)
-                .stream().findFirst().orElseThrow(() -> {throw new FilmDoesNotExistException();});
+                .stream().findFirst().orElseThrow(() -> {
+                    throw new FilmDoesNotExistException();
+                });
     }
 
     //NOTE: Upon deletion of film, we have to delete all links genre-film and film-like.
@@ -217,7 +249,7 @@ public class DbFilmStorage implements FilmStorage {
 
     @Override
     public List<Review> getReviewsForFilm(Integer filmId, Integer count) {
-        if(filmId != null) {
+        if (filmId != null) {
             return reviewDao.getReviewsForFilm(filmId, count);
         } else {
             return reviewDao.getAllReviews(count);
