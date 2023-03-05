@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.model.User;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.service.UserService;
@@ -17,10 +18,16 @@ public class UserController {
     private final static String GENERAL_FRIENDS_PATH = "/users/{id}/friends";
     private final static String ALTER_FRIENDS_PATH = "/users/{id}/friends/{friendId}";
     private final static String GENERAL_USERS_PATH = "/users";
+    private final static String FEED_PATH = "/users/{id}/feed";
 
     @Autowired
     public UserController(UserService userService) {
         this.userService = userService;
+    }
+
+    @GetMapping(FEED_PATH)
+    public List<Event> getFeed(@PathVariable("id") Integer userId) {
+        return userService.getFeed(userId);
     }
 
     @PutMapping(value = ALTER_FRIENDS_PATH)
