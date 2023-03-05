@@ -42,6 +42,7 @@ class FilmorateApplicationTests {
         mockMvc.perform(post("/users").contentType("application/json").content(newUserString))
                 .andDo(h -> System.out.println(h.getResponse().getContentAsString()))
                 .andExpect(status().is2xxSuccessful());
+        
     }
 
     @SneakyThrows
@@ -57,6 +58,7 @@ class FilmorateApplicationTests {
         mockMvc.perform(post("/users").contentType("application/json").content(newUserString))
                 .andDo(h -> System.out.println(h.getResponse().getStatus()))
                 .andExpect(status().is5xxServerError());
+
     }
 
     @SneakyThrows
@@ -71,6 +73,7 @@ class FilmorateApplicationTests {
         mockMvc.perform(post("/users").contentType("application/json").content(newUserString))
                 .andDo(h -> System.out.println(h.getResponse().getContentAsString()))
                 .andExpect(status().is2xxSuccessful());
+        
     }
 
     @SneakyThrows
@@ -142,8 +145,8 @@ class FilmorateApplicationTests {
                         "directed by Jonathan Mostow. Starring Arnold Schwarzenegger, Nick Stahl, " +
                         "Claire Danes, and Kristanna Loken, it is the third installment in the Terminator" +
                         "franchise and a sequel to Terminator 2: Judgment Day (1991). In its plot," +
-                        "the malevolent artificial intelligence Skynet sends a T-X (Loken)—a highly " +
-                        "advanced Terminator—back in time to ensure the rise of machines by killing " +
+                        "the malevolent artificial intelligence Skynet sends a T-X (Loken) -a highly " +
+                        "advanced Terminator -back in time to ensure the rise of machines by killing " +
                         "top members of the future human resistance as John Connor's (Stahl) location " +
                         "is unknown. The resistance sends back a reprogrammed T-101 (Schwarzenegger) " +
                         "to protect John and Kate.")

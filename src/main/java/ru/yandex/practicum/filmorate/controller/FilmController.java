@@ -50,8 +50,10 @@ public class FilmController {
     }
 
     @GetMapping(GENERAL_FILMS_PATH + "/popular")
-    public List<Film> findMostPopularFilms(@RequestParam(defaultValue = "10", required = false) Integer count) {
-        return filmService.getMostLikedFilms(count);
+    public List<Film> findMostPopularFilms(@RequestParam(defaultValue = "10", required = false) Integer count,
+                                           @RequestParam(defaultValue = "-1", required = false) Integer genreId,
+                                           @RequestParam(defaultValue = "-1", required = false) Integer year){
+        return filmService.getMostLikedFilms(count, genreId, year);
     }
 
     @GetMapping(GENERAL_FILMS_PATH + "/{id}")
@@ -99,7 +101,7 @@ public class FilmController {
         if (query.isPresent() && categories.isPresent()) {
             return filmService.searchFilms(query.get(), categories.get());
         } else {
-            return filmService.getMostLikedFilms(-1);
+            return filmService.getMostLikedFilms(-1, -1, -1);
         }
     }
 
