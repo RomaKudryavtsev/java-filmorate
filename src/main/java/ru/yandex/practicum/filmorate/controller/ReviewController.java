@@ -21,13 +21,13 @@ public class ReviewController {
         this.filmService = filmService;
     }
 
-    @PostMapping (value = GENERAL_REVIEW_PATH)
-    public Review addReview (@Valid @RequestBody Review review) {
+    @PostMapping(value = GENERAL_REVIEW_PATH)
+    public Review addReview(@Valid @RequestBody Review review) {
         return filmService.addReview(review);
     }
 
     @PutMapping(value = GENERAL_REVIEW_PATH)
-    public Review editReview (@Valid @RequestBody Review review) {
+    public Review editReview(@Valid @RequestBody Review review) {
         return filmService.editReview(review);
     }
 
@@ -42,28 +42,28 @@ public class ReviewController {
         return filmService.getReviewsForFilm(filmId, count);
     }
 
-    @PutMapping (value = ALTER_LIKE_PATH)
+    @PutMapping(value = ALTER_LIKE_PATH)
     public void addLike(@PathVariable("id") Integer reviewId, @PathVariable("userId") Integer userId) {
         filmService.addLikeToReview(reviewId, userId);
     }
 
 
-    @PutMapping (value = ALTER_DISLIKE_PATH)
+    @PutMapping(value = ALTER_DISLIKE_PATH)
     public void addDislike(@PathVariable("id") Integer reviewId, @PathVariable("userId") Integer userId) {
         filmService.addDislikeToReview(reviewId, userId);
     }
 
-    @DeleteMapping (value = ALTER_LIKE_PATH)
+    @DeleteMapping(value = ALTER_LIKE_PATH)
     public void removeLike(@PathVariable("id") Integer reviewId, @PathVariable("userId") Integer userId) {
         filmService.removeLikeToReview(reviewId, userId);
     }
 
-    @DeleteMapping (value = ALTER_DISLIKE_PATH)
+    @DeleteMapping(value = ALTER_DISLIKE_PATH)
     public void removeDislike(@PathVariable("id") Integer reviewId, @PathVariable("userId") Integer userId) {
         filmService.removeDislikeToReview(reviewId, userId);
     }
 
-    @DeleteMapping (value = GENERAL_REVIEW_PATH + "/{id}")
+    @DeleteMapping(value = GENERAL_REVIEW_PATH + "/{id}")
     public void deleteReview(@PathVariable("id") Integer reviewId) {
         filmService.deleteReviewById(reviewId);
     }

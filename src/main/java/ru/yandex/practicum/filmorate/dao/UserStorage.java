@@ -16,7 +16,7 @@ public interface UserStorage {
 
     User getUser(int userId);
 
-    List<Event> getFeed (int userId);
+    List<Event> getFeed(int userId);
 
     void deleteUser(int userId);
 

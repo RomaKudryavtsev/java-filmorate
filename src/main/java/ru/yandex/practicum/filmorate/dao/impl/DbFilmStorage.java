@@ -267,7 +267,7 @@ public class DbFilmStorage implements FilmStorage {
             film.getGenres().forEach(genre -> genreFilmDao.addNewGenreFilm(filmId, handleFilmGenre(genre)));
         }
         if (film.getDirectors() != null) {
-            film.getDirectors().stream().
+            film.getDirectors().
                     forEach(director -> directorFilmDao.addNewFilmDirector(filmId,
                             handleFilmDirector(director)));
 
@@ -310,13 +310,10 @@ public class DbFilmStorage implements FilmStorage {
         if (film.getDirectors() != null) {
             List<Director> dbDirectorsOfFilm = directorFilmDao.getDirectorsForFilm(film.getId());
             film.getDirectors().stream()
-                    .filter((director) -> {
-                        return !dbDirectorsOfFilm.stream().map(Director::getId).collect(Collectors.toSet())
-                                .contains(director.getId());
-                    })
-                    .forEach((director -> {
-                        directorFilmDao.addNewFilmDirector(film.getId(), handleFilmDirector(director));
-                    }));
+                    .filter((director) -> !dbDirectorsOfFilm.stream().map(Director::getId).collect(Collectors.toSet())
+                            .contains(director.getId()))
+                    .forEach((director ->
+                            directorFilmDao.addNewFilmDirector(film.getId(), handleFilmDirector(director))));
             dbDirectorsOfFilm.stream().filter(director -> !film.getDirectors().stream()
                             .map(Director::getId)
                             .collect(Collectors.toSet())
@@ -360,7 +357,7 @@ public class DbFilmStorage implements FilmStorage {
                 .userId(userId)
                 .entityId(filmId)
                 .build());
-        if(!filmLikesDao.getLikesOfFilm(filmId).contains(userId)) {
+        if (!filmLikesDao.getLikesOfFilm(filmId).contains(userId)) {
             filmLikesDao.addLike(filmId, userId);
         }
     }

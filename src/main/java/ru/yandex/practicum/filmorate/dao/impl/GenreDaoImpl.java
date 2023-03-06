@@ -53,13 +53,17 @@ public class GenreDaoImpl implements GenreDao {
     @Override
     public Genre getGenreById(Integer genreId) {
         return jdbcTemplate.query(SELECT_GENRE_BY_ID_SQL, (rs, rowNum) -> makeGenre(rs), genreId)
-                .stream().findFirst().orElseThrow(()-> {throw new GenreNotFoundException("Genre not found");});
+                .stream().findFirst().orElseThrow(() -> {
+                    throw new GenreNotFoundException("Genre not found");
+                });
     }
 
     @Override
     public Integer getGenreIdForGenreName(String name) {
         return jdbcTemplate.query(SELECT_GENRE_ID_FOR_GENRE_NAME_SQL, (rs, rowNum) -> makeGenreId(rs), name)
-                .stream().findFirst().orElseThrow(() -> {throw new GenreNotFoundException();});
+                .stream().findFirst().orElseThrow(() -> {
+                    throw new GenreNotFoundException();
+                });
     }
 
     private Genre makeGenre(ResultSet rs) throws SQLException {

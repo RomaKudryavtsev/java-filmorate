@@ -37,7 +37,7 @@ public class FilmService {
         this.userService = userService;
     }
 
-    private boolean validateFilm(Film film) throws ValidationException {
+    private void validateFilm(Film film) throws ValidationException {
         if (film.getDescription().length() > 200) {
             throw new ValidationException("Film description may not exceed 200 symbols");
         }
@@ -47,19 +47,16 @@ public class FilmService {
         if (film.getDuration() <= 0) {
             throw new ValidationException("Duration must be positive number");
         }
-        return true;
     }
 
-    private boolean checkIfFilmExists(Integer filmId) {
+    private void checkIfFilmExists(Integer filmId) {
         if (filmId != null) {
-            Set<Integer> allCurrentFilmIds = filmStorage.getAllFilms().stream().map(Film::getId)
-                    .collect(Collectors.toSet());
-            if (!allCurrentFilmIds.contains(filmId)) {
-                throw new FilmDoesNotExistException("Film does not exist");
+            try {
+                filmStorage.getFilm(filmId);
+            } catch (FilmDoesNotExistException e) {
+                throw new FilmDoesNotExistException("Film does not exists");
             }
-            return true;
         }
-        return false;
     }
 
     private boolean checkIfReviewExists(int reviewId) {
@@ -100,8 +97,7 @@ public class FilmService {
                 .collect(Collectors.toSet()).contains(film.getId())) {
             throw new FilmAlreadyExistsException("This film already exists");
         }
-        Film addedFilm = filmStorage.addFilm(film);
-        return addedFilm;
+        return filmStorage.addFilm(film);
     }
 
     public Film getFilmById(int filmId) {
@@ -147,13 +143,13 @@ public class FilmService {
     }
 
     public Director addDirector(Director director) {
-            if (director.getName()!= null) {
-                if (!director.getName().isBlank()) {
-                    return filmStorage.addDirector(director);
-                } else {
-                    throw new ValidationException("Invalid Director name");
-                }
-            } else throw new ValidationException("Invalid director");
+        if (director.getName() != null) {
+            if (!director.getName().isBlank()) {
+                return filmStorage.addDirector(director);
+            } else {
+                throw new ValidationException("Invalid Director name");
+            }
+        } else throw new ValidationException("Invalid director");
     }
 
     public void deleteDirector(Integer directorId) {
@@ -193,7 +189,6 @@ public class FilmService {
         return foundFilms;
     }
 
-    //Roma: new methods for ReviewController
     public Review addReview(Review review) {
         checkIfFilmExists(review.getFilmId());
         userService.checkIfUserExists(review.getUserId());

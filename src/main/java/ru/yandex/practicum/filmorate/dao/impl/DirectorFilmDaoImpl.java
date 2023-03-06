@@ -25,14 +25,15 @@ public class DirectorFilmDaoImpl implements DirectorFilmDao {
     public DirectorFilmDaoImpl(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
+
     @Override
     public void addNewFilmDirector(Integer filmId, Integer directorId) {
-        jdbcTemplate.update(INSERT_NEW_FILM_DIRECTOR_SQL,filmId,directorId);
+        jdbcTemplate.update(INSERT_NEW_FILM_DIRECTOR_SQL, filmId, directorId);
     }
 
     @Override
     public List<Director> getDirectorsForFilm(Integer filmId) {
-        return jdbcTemplate.query(SELECT_DIRECTORS_FOR_FILM_SQL,((rs, rowNum) -> makeDirector(rs)),filmId);
+        return jdbcTemplate.query(SELECT_DIRECTORS_FOR_FILM_SQL, ((rs, rowNum) -> makeDirector(rs)), filmId);
     }
 
     private Director makeDirector(ResultSet rs) throws SQLException {
@@ -41,17 +42,17 @@ public class DirectorFilmDaoImpl implements DirectorFilmDao {
 
     @Override
     public void deleteDirectorFilm(Integer filmId, Integer directorId) {
-        jdbcTemplate.update(DELETE_DIRECTOR_FOR_FILM_SQL,filmId,directorId);
+        jdbcTemplate.update(DELETE_DIRECTOR_FOR_FILM_SQL, filmId, directorId);
     }
 
     @Override
     public void deleteAllDirectorsForFilm(Integer filmId) {
-        jdbcTemplate.update(DELETE_ALL_DIRECTORS_FOR_FILM_SQL,filmId);
+        jdbcTemplate.update(DELETE_ALL_DIRECTORS_FOR_FILM_SQL, filmId);
     }
 
     @Override
     public void deleteAllDirectorLinks(Integer directorId) {
-        jdbcTemplate.update(DELETE_ALL_DIRECTOR_LINKS_SQL,directorId);
+        jdbcTemplate.update(DELETE_ALL_DIRECTOR_LINKS_SQL, directorId);
     }
 
 }

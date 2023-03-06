@@ -10,7 +10,6 @@ import ru.yandex.practicum.filmorate.exceptions.UserDoesNotExistException;
 import javax.validation.constraints.NotBlank;
 import java.time.LocalDate;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Set;
 
 @Data
@@ -31,16 +30,5 @@ public class Film {
 
     public int getAmountOfLikes() {
         return usersLiked.size();
-    }
-
-    public void addLike(int userId) {
-        usersLiked.add(userId);
-    }
-
-    public void removeLike(int userId) {
-        if (!usersLiked.contains(userId)) {
-            throw new UserDoesNotExistException("User does not exist");
-        }
-        usersLiked.remove(userId);
     }
 }

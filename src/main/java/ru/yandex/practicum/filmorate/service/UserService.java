@@ -16,7 +16,6 @@ import ru.yandex.practicum.filmorate.dao.UserStorage;
 import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -27,28 +26,26 @@ public class UserService {
     private final DbFilmStorage filmStorage;
 
     @Autowired
-    public UserService (UserStorage userStorage, DbFilmStorage filmStorage) {
+    public UserService(UserStorage userStorage, DbFilmStorage filmStorage) {
         this.userStorage = userStorage;
         this.filmStorage = filmStorage;
     }
 
-    private boolean validateUser(User user) throws ValidationException {
-        if(user.getLogin().contains(" ")) {
+    private void validateUser(User user) throws ValidationException {
+        if (user.getLogin().contains(" ")) {
             throw new ValidationException("Login must not contain white-spaces");
         }
-        if(user.getBirthday().isAfter(LocalDate.now())) {
+        if (user.getBirthday().isAfter(LocalDate.now())) {
             throw new ValidationException("Birthday must not be a date in future");
         }
-        return true;
     }
 
-    boolean checkIfUserExists(int userId) {
-        Set<Integer> allCurrentUserIds = userStorage.getAllUsers().stream().map(User::getId)
-                .collect(Collectors.toSet());
-        if(!allCurrentUserIds.contains(userId)) {
+    void checkIfUserExists(int userId) {
+        try {
+            userStorage.getUser(userId);
+        } catch (UserDoesNotExistException e) {
             throw new UserDoesNotExistException("User or its friend does not exist");
         }
-        return true;
     }
 
     public List<Event> getFeed(int userId) {
@@ -84,19 +81,18 @@ public class UserService {
     }
 
     public User addUser(User user) {
-        if(user.getName() == null || user.getName().isEmpty()) {
+        if (user.getName() == null || user.getName().isEmpty()) {
             user.setName((user.getLogin()));
         }
-        if(user.getUsersFriends() == null) {
+        if (user.getUsersFriends() == null) {
             user.setUsersFriends(new HashSet<>());
         }
         validateUser(user);
         if (userStorage.getAllUsers().stream().map(User::getId)
-                .collect(Collectors.toSet()).contains(user.getId())){
+                .collect(Collectors.toSet()).contains(user.getId())) {
             throw new UserAlreadyExistsException("This user already exists");
         }
-        User addedUser = userStorage.addUser(user);
-        return addedUser;
+        return userStorage.addUser(user);
     }
 
     public User getUserById(int id) {
@@ -110,7 +106,7 @@ public class UserService {
     }
 
     public User updateUser(User user) {
-        if(!userStorage.getAllUsers().stream().map(User::getId)
+        if (!userStorage.getAllUsers().stream().map(User::getId)
                 .collect(Collectors.toSet()).contains(user.getId())) {
             throw new UserToBeUpdatedDoesNotExistException("User to be updated does not exist");
         }

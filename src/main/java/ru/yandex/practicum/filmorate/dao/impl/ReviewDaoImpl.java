@@ -43,7 +43,7 @@ public class ReviewDaoImpl implements ReviewDao {
     }
 
     @Override
-    public Review addReview (Review review) {
+    public Review addReview(Review review) {
         KeyHolder reviewKeyHolder = new GeneratedKeyHolder();
         jdbcTemplate.update(connection -> {
             PreparedStatement stmt = connection.prepareStatement(INSERT_NEW_REVIEW_SQL, new String[]{"review_id"});
@@ -61,7 +61,7 @@ public class ReviewDaoImpl implements ReviewDao {
 
     //NOTE: Postman test require check that userId and filmId of the review are not changed
     @Override
-    public Review editReview (Review review) {
+    public Review editReview(Review review) {
         jdbcTemplate.update(UPDATE_REVIEW_SQL
                 , review.getContent()
                 , review.getIsPositive()
@@ -72,7 +72,7 @@ public class ReviewDaoImpl implements ReviewDao {
 
     //NOTE: Upon deletion of review we have to delete all links review-like
     @Override
-    public void deleteReviewById (int reviewId) {
+    public void deleteReviewById(int reviewId) {
         reviewLikesDao.deleteLikesAndDislikesByReviewId(reviewId);
         jdbcTemplate.update(DELETE_REVIEW_BY_ID_SQL, reviewId);
     }
@@ -80,55 +80,57 @@ public class ReviewDaoImpl implements ReviewDao {
     @Override
     public void deleteReviewsForFilm(int filmId) {
         jdbcTemplate.query(SELECT_ALL_REVIEWS_FOR_FILM_SQL, (rs, rowNum) -> makeReview(rs), filmId)
-                .stream().forEach(r -> deleteReviewById(r.getReviewId()));
+                .forEach(r -> deleteReviewById(r.getReviewId()));
     }
 
     @Override
     public void deleteReviewsForUser(int userId) {
         jdbcTemplate.query(SELECT_ALL_REVIEWS_FOR_USER_SQL, (rs, rowNum) -> makeReview(rs), userId)
-                .stream().forEach(r -> deleteReviewById(r.getReviewId()));
+                .forEach(r -> deleteReviewById(r.getReviewId()));
     }
 
     @Override
-    public List<Review> getAllReviews (int count) {
+    public List<Review> getAllReviews(int count) {
         return jdbcTemplate.query(SELECT_ALL_REVIEWS_WITH_LIMIT_SQL, (rs, rowNum) -> makeReview(rs), count)
                 .stream().sorted(Comparator.comparing(Review::getUseful).reversed()).collect(Collectors.toList());
     }
 
     @Override
-    public List<Review> getReviewsForFilm (int filmId, int count) {
+    public List<Review> getReviewsForFilm(int filmId, int count) {
         return jdbcTemplate.query(SELECT_REVIEWS_FOR_FILM_WITH_LIMIT_SQL, (rs, rowNum) -> makeReview(rs), filmId, count)
                 .stream().sorted(Comparator.comparing(Review::getUseful).reversed()).collect(Collectors.toList());
     }
 
     @Override
-    public Review getReviewById (int reviewId) {
+    public Review getReviewById(int reviewId) {
         return jdbcTemplate.query(SELECT_REVIEW_BY_ID_SQL, (rs, rowNum) -> makeReview(rs), reviewId)
                 .stream().findFirst()
-                .orElseThrow(() -> {throw new ReviewDoesNotExistException("Review does not exists");});
+                .orElseThrow(() -> {
+                    throw new ReviewDoesNotExistException("Review does not exists");
+                });
     }
 
     @Override
-    public void addLike (Integer reviewId, Integer userId) {
+    public void addLike(Integer reviewId, Integer userId) {
         reviewLikesDao.addLike(reviewId, userId);
     }
 
     @Override
-    public void addDislike (Integer reviewId, Integer userId) {
+    public void addDislike(Integer reviewId, Integer userId) {
         reviewLikesDao.addDislike(reviewId, userId);
     }
 
     @Override
-    public void removeLike (Integer reviewId, Integer userId) {
+    public void removeLike(Integer reviewId, Integer userId) {
         reviewLikesDao.removeLike(reviewId, userId);
     }
 
     @Override
-    public void removeDislike (Integer reviewId, Integer userId) {
+    public void removeDislike(Integer reviewId, Integer userId) {
         reviewLikesDao.removeDislike(reviewId, userId);
     }
 
-    private Review makeReview (ResultSet rs) throws SQLException {
+    private Review makeReview(ResultSet rs) throws SQLException {
         int id = rs.getInt("review_id");
         String content = rs.getString("content");
         boolean isPositive = rs.getBoolean("is_positive");

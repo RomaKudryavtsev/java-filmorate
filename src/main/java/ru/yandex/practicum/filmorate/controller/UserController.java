@@ -76,7 +76,7 @@ public class UserController {
     }
 
     @GetMapping(value = GENERAL_USERS_PATH + "/{id}/recommendations")
-    public List<Film> getRecommendations(@PathVariable("id") Integer userID){
+    public List<Film> getRecommendations(@PathVariable("id") Integer userID) {
         return userService.getRecommendations(userID);
     }
 }

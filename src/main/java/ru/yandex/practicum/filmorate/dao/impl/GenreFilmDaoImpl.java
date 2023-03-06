@@ -35,7 +35,7 @@ public class GenreFilmDaoImpl implements GenreFilmDao {
     }
 
     @Override
-    public void deleteGenreFilm(Integer filmId, Integer genreId){
+    public void deleteGenreFilm(Integer filmId, Integer genreId) {
         jdbcTemplate.update(DELETE_GENRE_FILM_SQL, filmId, genreId);
     }
 

@@ -7,7 +7,7 @@ import lombok.experimental.FieldDefaults;
 
 @Data
 @Builder
-@FieldDefaults (level = AccessLevel.PRIVATE)
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class Event {
     int eventId;
     long timestamp;

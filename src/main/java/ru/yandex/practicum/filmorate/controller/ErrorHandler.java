@@ -18,7 +18,7 @@ public class ErrorHandler {
     }
 
     @ExceptionHandler({FilmDoesNotExistException.class, UserDoesNotExistException.class,
-    UserToBeUpdatedDoesNotExistException.class, FilmToBeUpdatedDoesNotExistException.class})
+            UserToBeUpdatedDoesNotExistException.class, FilmToBeUpdatedDoesNotExistException.class})
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ErrorResponse handleNotFoundExceptions(final RuntimeException e) {
         log.debug(e.getMessage());
@@ -41,7 +41,7 @@ public class ErrorHandler {
 
     @ExceptionHandler({FilmAlreadyExistsException.class, UserAlreadyExistsException.class})
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public ErrorResponse handleAlreadyExistsExceptions (final RuntimeException e) {
+    public ErrorResponse handleAlreadyExistsExceptions(final RuntimeException e) {
         log.debug(e.getMessage());
         return new ErrorResponse(e.getMessage());
     }
@@ -52,9 +52,10 @@ public class ErrorHandler {
         log.debug(e.getMessage());
         return new ErrorResponse(e.getMessage());
     }
+
     @ExceptionHandler
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ErrorResponse handleDirectorNotFoundException (final RuntimeException e) {
+    public ErrorResponse handleDirectorNotFoundException(final RuntimeException e) {
         log.debug(e.getMessage());
         return new ErrorResponse(e.getMessage());
     }

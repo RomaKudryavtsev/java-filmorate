@@ -6,7 +6,10 @@ import java.util.List;
 
 public interface RatingDao {
     List<Rating> getAllRatings();
+
     Integer getRatingIdForRatingName(String name);
+
     Integer addNewRating(String name);
+
     Rating getRatingById(Integer ratingId);
 }

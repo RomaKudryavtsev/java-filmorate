@@ -5,7 +5,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
 import lombok.experimental.FieldDefaults;
-import ru.yandex.practicum.filmorate.exceptions.UserDoesNotExistException;
 
 import javax.validation.constraints.Email;
 import java.time.LocalDate;
@@ -23,14 +22,4 @@ public class User {
     String login;
     String name;
     LocalDate birthday;
-
-    public void addFriend(Friendship friendship) {
-        usersFriends.add(friendship);
-    }
-
-    public void removeFriend(Friendship friendship) {
-        if(!usersFriends.contains(friendship)) {
-            throw new UserDoesNotExistException("User does not exist");
-        }
-        usersFriends.remove(friendship);}
 }

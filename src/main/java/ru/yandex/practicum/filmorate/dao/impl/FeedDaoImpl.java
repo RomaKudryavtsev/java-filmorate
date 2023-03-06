@@ -9,7 +9,6 @@ import ru.yandex.practicum.filmorate.model.Event;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Timestamp;
 import java.util.List;
 
 @Component
@@ -88,4 +87,4 @@ public class FeedDaoImpl implements FeedDao {
     private Integer makeEventTypeId(ResultSet rs) throws SQLException {
         return rs.getInt("event_type_id");
     }
- }
+}

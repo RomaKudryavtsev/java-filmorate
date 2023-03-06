@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.dao.ReviewLikesDao;
+import ru.yandex.practicum.filmorate.exceptions.ReviewDoesNotExistException;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -28,22 +29,22 @@ public class ReviewLikesDaoImpl implements ReviewLikesDao {
     }
 
     @Override
-    public void addLike (Integer reviewId, Integer userId) {
+    public void addLike(Integer reviewId, Integer userId) {
         jdbcTemplate.update(INSERT_NEW_REVIEW_LIKE_SQL, reviewId, userId);
     }
 
     @Override
-    public void addDislike (Integer reviewId, Integer userId) {
+    public void addDislike(Integer reviewId, Integer userId) {
         jdbcTemplate.update(INSERT_NEW_REVIEW_DISLIKE_SQL, reviewId, userId);
     }
 
     @Override
-    public void removeLike (Integer reviewId, Integer userId) {
+    public void removeLike(Integer reviewId, Integer userId) {
         jdbcTemplate.update(DELETE_REVIEW_LIKE_OR_DISLIKE_SQL, reviewId, userId);
     }
 
     @Override
-    public void removeDislike (Integer reviewId, Integer userId) {
+    public void removeDislike(Integer reviewId, Integer userId) {
         jdbcTemplate.update(DELETE_REVIEW_LIKE_OR_DISLIKE_SQL, reviewId, userId);
     }
 
@@ -51,10 +52,14 @@ public class ReviewLikesDaoImpl implements ReviewLikesDao {
     public int getUsefulRateForReview(int reviewId) {
         int likesCounter = jdbcTemplate
                 .query(SELECT_LIKES_AMOUNT_FOR_REVIEW_SQL, (rs, rowNum) -> makeCount(rs), reviewId)
-                .stream().findFirst().get();
+                .stream().findFirst().orElseThrow(() -> {
+                    throw new ReviewDoesNotExistException();
+                });
         int dislikeCounter = jdbcTemplate
                 .query(SELECT_DISLIKES_AMOUNT_FOR_REVIEW_SQL, (rs, rowNum) -> makeCount(rs), reviewId)
-                .stream().findFirst().get();
+                .stream().findFirst().orElseThrow(() -> {
+                    throw new ReviewDoesNotExistException();
+                });
         return likesCounter - dislikeCounter;
     }
 

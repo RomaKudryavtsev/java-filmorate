@@ -43,7 +43,9 @@ public class RatingDaoImpl implements RatingDao {
     @Override
     public Integer getRatingIdForRatingName(String name) {
         return jdbcTemplate.query(SELECT_RATING_ID_FOR_RATING_NAME_SQL, (rs, rowNum) -> makeRatingId(rs), name)
-                .stream().findFirst().orElseThrow(() -> {throw new RatingNotFoundException();});
+                .stream().findFirst().orElseThrow(() -> {
+                    throw new RatingNotFoundException();
+                });
     }
 
     @Override
@@ -53,8 +55,10 @@ public class RatingDaoImpl implements RatingDao {
 
     @Override
     public Rating getRatingById(Integer ratingId) {
-        return jdbcTemplate.query(SELECT_RATING_BY_ID_SQL,  (rs, rowNum) -> makeRating(rs), ratingId)
-                .stream().findFirst().orElseThrow(() -> {throw new RatingNotFoundException("Rating not found");});
+        return jdbcTemplate.query(SELECT_RATING_BY_ID_SQL, (rs, rowNum) -> makeRating(rs), ratingId)
+                .stream().findFirst().orElseThrow(() -> {
+                    throw new RatingNotFoundException("Rating not found");
+                });
     }
 
     private Rating makeRating(ResultSet rs) throws SQLException {
