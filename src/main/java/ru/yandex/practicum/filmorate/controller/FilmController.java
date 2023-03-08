@@ -26,9 +26,9 @@ import java.util.Optional;
 public class FilmController {
     //NOTE: FilmController is dependent from FilmService
     private final FilmService filmService;
-    private final static String ALTER_LIKES_PATH = "/films/{id}/like/{userId}";
     private final static String GENERAL_FILMS_PATH = "/films";
-    private final static String GENERAL_SEARCH_PATH = "/films/search";
+    private final static String ALTER_LIKES_PATH = GENERAL_FILMS_PATH + "/{id}/like/{userId}";
+    private final static String SEARCH_PATH = GENERAL_FILMS_PATH + "/search";
     private final static String GENERAL_GENRES_PATH = "/genres";
     private final static String GENERAL_RATINGS_PATH = "/mpa";
     private final static String GENERAL_DIRECTORS_PATH = "/directors";
@@ -96,7 +96,7 @@ public class FilmController {
         return filmService.getRatingById(ratingId);
     }
 
-    @GetMapping(GENERAL_SEARCH_PATH)
+    @GetMapping(SEARCH_PATH)
     public Collection<Film> searchFilms(@RequestParam Optional<String> query, @RequestParam("by") Optional<List<String>> categories) {
         if (query.isPresent() && categories.isPresent()) {
             return filmService.searchFilms(query.get(), categories.get());

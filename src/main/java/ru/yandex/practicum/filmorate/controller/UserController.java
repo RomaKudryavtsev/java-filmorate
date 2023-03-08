@@ -15,10 +15,10 @@ import java.util.List;
 public class UserController {
     //NOTE: UserController is dependent from UserService
     private final UserService userService;
-    private final static String GENERAL_FRIENDS_PATH = "/users/{id}/friends";
-    private final static String ALTER_FRIENDS_PATH = "/users/{id}/friends/{friendId}";
     private final static String GENERAL_USERS_PATH = "/users";
-    private final static String FEED_PATH = "/users/{id}/feed";
+    private final static String GENERAL_FRIENDS_PATH = GENERAL_USERS_PATH + "/{id}/friends";
+    private final static String ALTER_FRIENDS_PATH = GENERAL_FRIENDS_PATH + "/{friendId}";
+    private final static String FEED_PATH = GENERAL_USERS_PATH + "/{id}/feed";
 
     @Autowired
     public UserController(UserService userService) {

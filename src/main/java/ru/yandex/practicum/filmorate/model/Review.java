@@ -11,16 +11,16 @@ import javax.validation.constraints.NotNull;
 @Data
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class Review {
-    private int reviewId;
+    int reviewId;
     @NotNull
-    private String content;
+    String content;
     @NotNull
-    private Boolean isPositive;
+    Boolean isPositive;
     @NotNull
-    private Integer userId;
+    Integer userId;
     @NotNull
-    private Integer filmId;
-    private int useful;
+    Integer filmId;
+    int useful;
 
     public boolean getIsPositive() {
         return isPositive;
