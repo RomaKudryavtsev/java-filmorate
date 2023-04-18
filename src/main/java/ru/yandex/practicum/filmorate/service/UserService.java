@@ -40,12 +40,8 @@ public class UserService {
         }
     }
 
-    void checkIfUserExists(int userId) {
-        try {
-            userStorage.getUser(userId);
-        } catch (UserDoesNotExistException e) {
-            throw new UserDoesNotExistException("User or its friend does not exist");
-        }
+    void checkIfUserExists(int userId) throws UserDoesNotExistException {
+        userStorage.getUser(userId);
     }
 
     public List<Event> getFeed(int userId) {
