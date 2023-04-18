@@ -59,7 +59,6 @@ public class ReviewDaoImpl implements ReviewDao {
         return review;
     }
 
-    //NOTE: Postman test require check that userId and filmId of the review are not changed
     @Override
     public Review editReview(Review review) {
         jdbcTemplate.update(UPDATE_REVIEW_SQL

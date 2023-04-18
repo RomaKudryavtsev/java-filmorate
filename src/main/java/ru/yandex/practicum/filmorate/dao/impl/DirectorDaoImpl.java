@@ -45,7 +45,7 @@ public class DirectorDaoImpl implements DirectorDao {
 
         return jdbcTemplate.query(SELECT_DIRECTOR_BY_ID_SQL, (rs, rowNum) -> makeDirector(rs), directorId)
                 .stream().findFirst().orElseThrow(() -> {
-                    throw new DirectorNotFoundException("Нет такого режиссера");
+                    throw new DirectorNotFoundException("Director does not exist");
                 });
     }
 

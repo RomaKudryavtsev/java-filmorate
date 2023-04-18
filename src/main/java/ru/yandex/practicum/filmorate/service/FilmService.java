@@ -26,8 +26,6 @@ import java.util.stream.Collectors;
 public class FilmService {
     private static final String SEARCH_CATEGORY_DIRECTOR = "director";
     private static final String SEARCH_CATEGORY_TITLE = "title";
-
-    //NOTE: FilmService is dependent from FilmStorage
     private final FilmStorage filmStorage;
     private final UserService userService;
 

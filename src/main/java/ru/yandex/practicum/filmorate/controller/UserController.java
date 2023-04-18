@@ -13,7 +13,6 @@ import java.util.List;
 @RestController
 @RequestMapping
 public class UserController {
-    //NOTE: UserController is dependent from UserService
     private final UserService userService;
     private final static String GENERAL_USERS_PATH = "/users";
     private final static String GENERAL_FRIENDS_PATH = GENERAL_USERS_PATH + "/{id}/friends";

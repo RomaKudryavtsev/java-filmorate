@@ -24,7 +24,6 @@ import java.util.Optional;
 @RestController
 @RequestMapping
 public class FilmController {
-    //NOTE: FilmController is dependent from FilmService
     private final FilmService filmService;
     private final static String GENERAL_FILMS_PATH = "/films";
     private final static String ALTER_LIKES_PATH = GENERAL_FILMS_PATH + "/{id}/like/{userId}";

@@ -117,7 +117,7 @@ ALTER TABLE RATING ALTER COLUMN rating_id RESTART WITH 1;
 
 INSERT INTO RATING (name) values('G'), ('PG'), ('PG-13'), ('R'), ('NC-17');
 
-INSERT INTO GENRE (name) values('Комедия'), ('Драма'), ('Мультфильм'), ('Триллер'), ('Документальный'), ('Боевик');
+INSERT INTO GENRE (name) values('Comedy'), ('Drama'), ('Animation'), ('Thriller'), ('Documentary'), ('Action');
 
 INSERT INTO EVENT_TYPE (name) values('LIKE'), ('REVIEW'), ('FRIEND');
 

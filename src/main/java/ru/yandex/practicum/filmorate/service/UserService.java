@@ -21,7 +21,6 @@ import java.util.stream.Collectors;
 @Service
 @Slf4j
 public class UserService {
-    //NOTE: UserService is dependent from UserStorage
     private final UserStorage userStorage;
     private final DbFilmStorage filmStorage;
 
